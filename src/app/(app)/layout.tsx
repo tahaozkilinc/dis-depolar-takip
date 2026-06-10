@@ -9,18 +9,21 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
+  // Middleware already verified the session with Supabase Auth on this
+  // request, so reading it from the local cookie here avoids a second
+  // network round-trip to the auth server on every navigation.
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!user) {
+  if (!session) {
     redirect("/login");
   }
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", session.user.id)
     .maybeSingle<Profile>();
 
   if (!profile) {

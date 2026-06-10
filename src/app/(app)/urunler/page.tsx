@@ -6,6 +6,7 @@ import {
   deleteProduct,
   addDestination,
   deleteDestination,
+  updateDestinationLocation,
 } from "./actions";
 
 export default async function UrunlerPage() {
@@ -33,8 +34,10 @@ export default async function UrunlerPage() {
         title="Varış Noktaları"
         items={(destinations ?? []) as Destination[]}
         showUnit={false}
+        showLatLng
         onAdd={addDestination}
         onDelete={deleteDestination}
+        onUpdateLocation={updateDestinationLocation}
       />
     </div>
   );

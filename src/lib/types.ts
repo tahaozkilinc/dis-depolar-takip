@@ -6,6 +6,8 @@ export interface Warehouse {
   name: string;
   location: string | null;
   active: boolean;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
 }
 
@@ -19,6 +21,8 @@ export interface Product {
 export interface Destination {
   id: string;
   name: string;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
 }
 

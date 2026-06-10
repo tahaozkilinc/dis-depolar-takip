@@ -22,11 +22,22 @@ export async function deleteProduct(id: string) {
   return { success: true };
 }
 
+function parseCoordinate(value: FormDataEntryValue | null): number | null {
+  const trimmed = (value as string)?.trim();
+  if (!trimmed) return null;
+  const num = Number(trimmed);
+  return Number.isFinite(num) ? num : null;
+}
+
 export async function addDestination(formData: FormData) {
   const supabase = await createClient();
   const name = (formData.get("name") as string)?.trim();
   if (!name) return { error: "Varış noktası adı zorunludur." };
-  const { error } = await supabase.from("destinations").insert({ name });
+  const latitude = parseCoordinate(formData.get("latitude"));
+  const longitude = parseCoordinate(formData.get("longitude"));
+  const { error } = await supabase
+    .from("destinations")
+    .insert({ name, latitude, longitude });
   if (error) return { error: error.message };
   revalidatePath("/urunler");
   return { success: true };
@@ -35,6 +46,20 @@ export async function addDestination(formData: FormData) {
 export async function deleteDestination(id: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("destinations").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/urunler");
+  return { success: true };
+}
+
+export async function updateDestinationLocation(
+  id: string,
+  data: { latitude: number | null; longitude: number | null }
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("destinations")
+    .update(data)
+    .eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/urunler");
   return { success: true };

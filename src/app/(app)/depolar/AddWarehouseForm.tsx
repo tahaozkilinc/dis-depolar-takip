@@ -51,6 +51,30 @@ export default function AddWarehouseForm() {
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
+        <div className="sm:w-32">
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Enlem
+          </label>
+          <input
+            type="number"
+            step="any"
+            name="latitude"
+            placeholder="41.0082"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+        </div>
+        <div className="sm:w-32">
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Boylam
+          </label>
+          <input
+            type="number"
+            step="any"
+            name="longitude"
+            placeholder="28.9784"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+        </div>
         <div>
           <button
             type="submit"

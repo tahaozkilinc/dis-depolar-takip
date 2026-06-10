@@ -7,20 +7,29 @@ interface Item {
   id: string;
   name: string;
   unit?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export default function CrudSection({
   title,
   items,
   showUnit,
+  showLatLng,
   onAdd,
   onDelete,
+  onUpdateLocation,
 }: {
   title: string;
   items: Item[];
   showUnit: boolean;
+  showLatLng?: boolean;
   onAdd: (formData: FormData) => Promise<{ error?: string; success?: boolean }>;
   onDelete: (id: string) => Promise<{ error?: string; success?: boolean }>;
+  onUpdateLocation?: (
+    id: string,
+    data: { latitude: number | null; longitude: number | null }
+  ) => Promise<{ error?: string; success?: boolean }>;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -80,6 +89,34 @@ export default function CrudSection({
             />
           </div>
         )}
+        {showLatLng && (
+          <>
+            <div className="sm:w-28">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Enlem
+              </label>
+              <input
+                type="number"
+                step="any"
+                name="latitude"
+                placeholder="41.0082"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+            </div>
+            <div className="sm:w-28">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Boylam
+              </label>
+              <input
+                type="number"
+                step="any"
+                name="longitude"
+                placeholder="28.9784"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+            </div>
+          </>
+        )}
         <div>
           <button
             type="submit"
@@ -97,6 +134,7 @@ export default function CrudSection({
             <tr>
               <th className="px-4 py-2">Ad</th>
               {showUnit && <th className="px-4 py-2">Birim</th>}
+              {showLatLng && <th className="px-4 py-2">Enlem / Boylam</th>}
               <th className="px-4 py-2"></th>
             </tr>
           </thead>
@@ -104,7 +142,7 @@ export default function CrudSection({
             {items.length === 0 && (
               <tr>
                 <td
-                  colSpan={showUnit ? 3 : 2}
+                  colSpan={showUnit || showLatLng ? 3 : 2}
                   className="px-4 py-4 text-center text-gray-500"
                 >
                   Kayıt bulunamadı.
@@ -115,6 +153,11 @@ export default function CrudSection({
               <tr key={item.id} className="border-t">
                 <td className="px-4 py-2">{item.name}</td>
                 {showUnit && <td className="px-4 py-2">{item.unit}</td>}
+                {showLatLng && onUpdateLocation && (
+                  <td className="px-4 py-2">
+                    <LocationCell item={item} onUpdateLocation={onUpdateLocation} />
+                  </td>
+                )}
                 <td className="px-4 py-2 text-right">
                   <button
                     onClick={() => handleDelete(item.id)}
@@ -129,6 +172,66 @@ export default function CrudSection({
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function LocationCell({
+  item,
+  onUpdateLocation,
+}: {
+  item: Item;
+  onUpdateLocation: (
+    id: string,
+    data: { latitude: number | null; longitude: number | null }
+  ) => Promise<{ error?: string; success?: boolean }>;
+}) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [latitude, setLatitude] = useState(item.latitude?.toString() ?? "");
+  const [longitude, setLongitude] = useState(item.longitude?.toString() ?? "");
+  const [error, setError] = useState<string | null>(null);
+
+  function handleSave() {
+    setError(null);
+    startTransition(async () => {
+      const lat = latitude.trim() ? Number(latitude) : null;
+      const lng = longitude.trim() ? Number(longitude) : null;
+      const res = await onUpdateLocation(item.id, {
+        latitude: lat !== null && Number.isFinite(lat) ? lat : null,
+        longitude: lng !== null && Number.isFinite(lng) ? lng : null,
+      });
+      if (res?.error) setError(res.error);
+      else router.refresh();
+    });
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        type="number"
+        step="any"
+        placeholder="Enlem"
+        value={latitude}
+        onChange={(e) => setLatitude(e.target.value)}
+        className="w-24 rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+      />
+      <input
+        type="number"
+        step="any"
+        placeholder="Boylam"
+        value={longitude}
+        onChange={(e) => setLongitude(e.target.value)}
+        className="w-24 rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+      />
+      <button
+        onClick={handleSave}
+        disabled={isPending}
+        className="rounded-md border px-2 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 disabled:opacity-50"
+      >
+        Kaydet
+      </button>
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
 }

@@ -11,15 +11,21 @@ export default function WarehouseRow({ warehouse }: { warehouse: Warehouse }) {
   const [name, setName] = useState(warehouse.name);
   const [location, setLocation] = useState(warehouse.location ?? "");
   const [active, setActive] = useState(warehouse.active);
+  const [latitude, setLatitude] = useState(warehouse.latitude?.toString() ?? "");
+  const [longitude, setLongitude] = useState(warehouse.longitude?.toString() ?? "");
   const [error, setError] = useState<string | null>(null);
 
   function handleSave() {
     setError(null);
     startTransition(async () => {
+      const lat = latitude.trim() ? Number(latitude) : null;
+      const lng = longitude.trim() ? Number(longitude) : null;
       const res = await updateWarehouse(warehouse.id, {
         name,
         location: location || null,
         active,
+        latitude: lat !== null && Number.isFinite(lat) ? lat : null,
+        longitude: lng !== null && Number.isFinite(lng) ? lng : null,
       });
       if (res?.error) setError(res.error);
       else router.refresh();
@@ -52,6 +58,26 @@ export default function WarehouseRow({ warehouse }: { warehouse: Warehouse }) {
           onChange={(e) => setLocation(e.target.value)}
           className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
+      </td>
+      <td className="px-4 py-2">
+        <div className="flex gap-1">
+          <input
+            type="number"
+            step="any"
+            placeholder="Enlem"
+            value={latitude}
+            onChange={(e) => setLatitude(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+          <input
+            type="number"
+            step="any"
+            placeholder="Boylam"
+            value={longitude}
+            onChange={(e) => setLongitude(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+        </div>
       </td>
       <td className="px-4 py-2 text-center">
         <input

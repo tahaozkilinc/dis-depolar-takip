@@ -6,6 +6,9 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { UserRole } from "@/lib/types";
 import { signOut } from "../actions";
+import packageJson from "../../../../package.json";
+
+const APP_VERSION = packageJson.version;
 
 interface NavItem {
   href: string;
@@ -18,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/stok-girisi", label: "Stok Girişi", roles: ["admin"] },
   { href: "/tasima-girisi", label: "Taşıma Girişi", roles: ["admin", "depo"] },
   { href: "/tasimalar", label: "Taşımalar (Tonaj Listesi)", roles: ["admin", "depo"] },
+  { href: "/harita", label: "Harita", roles: ["admin", "depo"] },
   { href: "/maliyetler", label: "Maliyet Raporu", roles: ["admin"] },
   { href: "/depolar", label: "Depolar", roles: ["admin"] },
   { href: "/urunler", label: "Ürünler & Varış Noktaları", roles: ["admin"] },
@@ -103,6 +107,9 @@ export default function SidebarNav({
                 Çıkış Yap
               </button>
             </form>
+          </div>
+          <div className="hidden border-t px-4 py-2 text-xs text-gray-400 md:block">
+            v{APP_VERSION}
           </div>
         </aside>
 

@@ -24,6 +24,7 @@ export default async function DepolarPage() {
             <tr>
               <th className="px-4 py-2">Depo Adı</th>
               <th className="px-4 py-2">Konum</th>
+              <th className="px-4 py-2">Enlem / Boylam</th>
               <th className="px-4 py-2 text-center">Aktif</th>
               <th className="px-4 py-2"></th>
             </tr>
@@ -31,7 +32,7 @@ export default async function DepolarPage() {
           <tbody>
             {list.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-4 text-center text-gray-500">
+                <td colSpan={5} className="px-4 py-4 text-center text-gray-500">
                   Kayıt bulunamadı.
                 </td>
               </tr>
