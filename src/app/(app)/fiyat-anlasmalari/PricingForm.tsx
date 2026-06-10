@@ -4,6 +4,7 @@ import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Destination, Warehouse } from "@/lib/types";
 import { addPricingAgreement } from "./actions";
+import FormattedNumberInput from "../components/FormattedNumberInput";
 
 export default function PricingForm({
   warehouses,
@@ -100,11 +101,9 @@ export default function PricingForm({
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Birim Fiyat (TL)
             </label>
-            <input
-              type="number"
+            <FormattedNumberInput
               name="unit_price"
-              step="0.01"
-              min="0"
+              decimals={2}
               required
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />

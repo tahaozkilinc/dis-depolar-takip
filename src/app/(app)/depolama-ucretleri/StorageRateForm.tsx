@@ -4,6 +4,7 @@ import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Warehouse } from "@/lib/types";
 import { addStorageRate } from "./actions";
+import FormattedNumberInput from "../components/FormattedNumberInput";
 
 export default function StorageRateForm({
   warehouses,
@@ -56,11 +57,9 @@ export default function StorageRateForm({
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Ton/Gün Ücreti (TL)
             </label>
-            <input
-              type="number"
+            <FormattedNumberInput
               name="price_per_ton_per_day"
-              step="0.01"
-              min="0"
+              decimals={2}
               required
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />

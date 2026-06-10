@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Destination, StockBalance, Warehouse } from "@/lib/types";
 import { addShipment } from "./actions";
 import { formatTon } from "@/lib/format";
+import FormattedNumberInput from "../components/FormattedNumberInput";
 
 export default function ShipmentForm({
   warehouses,
@@ -147,14 +148,12 @@ export default function ShipmentForm({
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Tonaj
             </label>
-            <input
-              type="number"
+            <FormattedNumberInput
               name="tonnage"
-              step="0.001"
-              min="0"
+              decimals={3}
               required
               value={tonnage}
-              onChange={(e) => setTonnage(e.target.value)}
+              onValueChange={setTonnage}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
             {overLimit && (

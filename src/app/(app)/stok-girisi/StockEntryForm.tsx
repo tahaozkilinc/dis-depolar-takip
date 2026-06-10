@@ -4,6 +4,7 @@ import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Product, Warehouse } from "@/lib/types";
 import { addStockEntry, addProductQuick } from "./actions";
+import FormattedNumberInput from "../components/FormattedNumberInput";
 
 export default function StockEntryForm({
   warehouses,
@@ -112,11 +113,9 @@ export default function StockEntryForm({
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Tonaj
             </label>
-            <input
-              type="number"
+            <FormattedNumberInput
               name="tonnage"
-              step="0.001"
-              min="0"
+              decimals={3}
               required
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
