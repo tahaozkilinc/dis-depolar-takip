@@ -11,21 +11,24 @@ import type {
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user!.id)
-    .maybeSingle<Profile>();
-
-  const [{ data: totals }, { data: todaySummary }, { data: storageToday }] =
-    await Promise.all([
-      supabase.from("warehouse_totals").select("*"),
-      supabase.from("today_shipments_summary").select("*"),
-      supabase.from("daily_storage_cost_today").select("*"),
-    ]);
+  const [
+    { data: profile },
+    { data: totals },
+    { data: todaySummary },
+    { data: storageToday },
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session!.user.id)
+      .maybeSingle<Profile>(),
+    supabase.from("warehouse_totals").select("*"),
+    supabase.from("today_shipments_summary").select("*"),
+    supabase.from("daily_storage_cost_today").select("*"),
+  ]);
 
   const isDepo = profile?.role === "depo";
   const myWarehouseId = profile?.warehouse_id ?? null;

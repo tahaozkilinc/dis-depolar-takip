@@ -23,14 +23,21 @@ interface ShipmentRow {
 export default async function TasimaGirisiPage() {
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session!.user;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user!.id)
-    .maybeSingle<Profile>();
+  const [
+    { data: profile },
+    { data: warehouses },
+    { data: destinations },
+    { data: balances },
+  ] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>(),
+    supabase.from("warehouses").select("*").eq("active", true).order("name"),
+    supabase.from("destinations").select("*").order("name"),
+    supabase.from("stock_balances").select("*"),
+  ]);
 
   if (!profile) {
     return (
@@ -52,13 +59,6 @@ export default async function TasimaGirisiPage() {
       </div>
     );
   }
-
-  const [{ data: warehouses }, { data: destinations }, { data: balances }] =
-    await Promise.all([
-      supabase.from("warehouses").select("*").eq("active", true).order("name"),
-      supabase.from("destinations").select("*").order("name"),
-      supabase.from("stock_balances").select("*"),
-    ]);
 
   const fixedWarehouseId = isAdmin ? null : profile.warehouse_id;
   const fixedWarehouseName = fixedWarehouseId
@@ -119,7 +119,7 @@ export default async function TasimaGirisiPage() {
                 </tr>
               )}
               {shipmentRows.map((s) => {
-                const canDelete = isAdmin || s.created_by === user!.id;
+                const canDelete = isAdmin || s.created_by === user.id;
                 return (
                   <tr key={s.id} className="border-t">
                     <td className="px-4 py-2">{formatDate(s.shipment_date)}</td>

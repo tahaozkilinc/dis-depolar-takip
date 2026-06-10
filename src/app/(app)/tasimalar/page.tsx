@@ -24,23 +24,26 @@ export default async function TasimalarPage({
   const params = await searchParams;
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user!.id)
-    .maybeSingle<Profile>();
+  const [
+    { data: profile },
+    { data: warehouses },
+    { data: products },
+    { data: destinations },
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session!.user.id)
+      .maybeSingle<Profile>(),
+    supabase.from("warehouses").select("*").order("name"),
+    supabase.from("products").select("*").order("name"),
+    supabase.from("destinations").select("*").order("name"),
+  ]);
 
   const isAdmin = profile?.role === "admin";
-
-  const [{ data: warehouses }, { data: products }, { data: destinations }] =
-    await Promise.all([
-      supabase.from("warehouses").select("*").order("name"),
-      supabase.from("products").select("*").order("name"),
-      supabase.from("destinations").select("*").order("name"),
-    ]);
 
   const warehouseId = (params.warehouse_id as string) || "";
   const productId = (params.product_id as string) || "";

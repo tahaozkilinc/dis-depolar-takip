@@ -5,8 +5,8 @@ import UserRow from "./UserRow";
 export default async function KullanicilarPage() {
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const [{ data: profiles }, { data: warehouses }] = await Promise.all([
     supabase.from("profiles").select("*").order("created_at"),
@@ -50,7 +50,7 @@ export default async function KullanicilarPage() {
                 key={p.id}
                 profile={p}
                 warehouses={warehouseList}
-                isSelf={p.id === user?.id}
+                isSelf={p.id === session?.user.id}
               />
             ))}
           </tbody>
