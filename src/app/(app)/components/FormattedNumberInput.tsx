@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface FormattedNumberInputProps {
   name: string;
+  /** Number of decimal digits. 0 = whole number with "." thousand separators
+   *  (e.g. 1233 -> "1.233"). >0 = fixed-decimal entry where the last N typed
+   *  digits become the decimal part (e.g. 23312 with decimals=3 -> "23.312"). */
   decimals?: number;
   defaultValue?: number | string | null;
   value?: string;
@@ -15,41 +18,34 @@ interface FormattedNumberInputProps {
   id?: string;
 }
 
-function groupThousands(digits: string): string {
-  if (!digits) return digits;
-  const stripped = digits.replace(/^0+(?=\d)/, "");
-  return stripped.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-
-// Converts a display string (dot thousand separators, comma decimal) into a
-// formatted display string and a raw numeric string (dot decimal separator,
-// suitable for parseFloat) used by the hidden form field.
-function sanitize(input: string, decimals: number): { display: string; raw: string } {
-  const noGroups = input.replace(/\./g, "");
-  const commaIndex = decimals > 0 ? noGroups.indexOf(",") : -1;
-
-  let intDigits: string;
-  let decDigits: string | undefined;
-  if (commaIndex !== -1) {
-    intDigits = noGroups.slice(0, commaIndex).replace(/\D/g, "");
-    decDigits = noGroups.slice(commaIndex + 1).replace(/\D/g, "").slice(0, decimals);
-  } else {
-    intDigits = noGroups.replace(/\D/g, "");
-    decDigits = undefined;
-  }
-
-  const groupedInt = groupThousands(intDigits);
-  const display = decDigits !== undefined ? `${groupedInt || "0"},${decDigits}` : groupedInt;
-
-  const rawInt = intDigits.replace(/^0+(?=\d)/, "");
-  const raw = decDigits !== undefined ? `${rawInt || "0"}.${decDigits}` : rawInt;
-
-  return { display, raw };
-}
-
-function toDisplay(value: string | number | null | undefined, decimals: number): string {
+function digitsFromValue(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === "") return "";
-  return sanitize(String(value).replace(".", ","), decimals).display;
+  return String(value).replace(/\D/g, "");
+}
+
+function formatGrouped(digits: string): { display: string; raw: string } {
+  if (!digits) return { display: "", raw: "" };
+  const stripped = digits.replace(/^0+/, "") || "0";
+  const display = stripped.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return { display, raw: stripped };
+}
+
+function formatFixedDecimal(
+  digits: string,
+  decimals: number
+): { display: string; raw: string } {
+  if (!digits) return { display: "", raw: "" };
+  const padded = digits.padStart(decimals + 1, "0");
+  const intPart = padded.slice(0, -decimals).replace(/^0+/, "") || "0";
+  const decPart = padded.slice(-decimals);
+  const display = `${intPart}.${decPart}`;
+  return { display, raw: display };
+}
+
+function format(digits: string, decimals: number) {
+  return decimals > 0
+    ? formatFixedDecimal(digits, decimals)
+    : formatGrouped(digits);
 }
 
 export default function FormattedNumberInput({
@@ -65,58 +61,42 @@ export default function FormattedNumberInput({
   id,
 }: FormattedNumberInputProps) {
   const isControlled = value !== undefined;
-  const [internalRaw, setInternalRaw] = useState(() =>
-    sanitize(toDisplay(defaultValue, decimals), decimals).raw
+  const [internalDigits, setInternalDigits] = useState(() =>
+    digitsFromValue(defaultValue)
   );
-  const [display, setDisplay] = useState(() => toDisplay(defaultValue, decimals));
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const raw = isControlled
-    ? sanitize(toDisplay(value, decimals), decimals).raw
-    : internalRaw;
-  const shownDisplay = isControlled ? toDisplay(value, decimals) : display;
+  const digits = isControlled ? digitsFromValue(value) : internalDigits;
+  const { display, raw } = format(digits, decimals);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const input = e.target;
-    const newValue = input.value;
-    const cursorPos = input.selectionStart ?? newValue.length;
-    const meaningfulBeforeCursor = newValue.slice(0, cursorPos).replace(/\./g, "").length;
-
-    const { display: formatted, raw: newRaw } = sanitize(newValue, decimals);
-
-    let newPos = formatted.length;
-    if (meaningfulBeforeCursor === 0) {
-      newPos = 0;
-    } else {
-      let count = 0;
-      for (let i = 0; i < formatted.length; i++) {
-        if (formatted[i] !== ".") count++;
-        if (count === meaningfulBeforeCursor) {
-          newPos = i + 1;
-          break;
-        }
-      }
-    }
-
+    const newDigits = e.target.value.replace(/\D/g, "");
     if (isControlled) {
-      onValueChange?.(newRaw);
+      onValueChange?.(format(newDigits, decimals).raw);
     } else {
-      setInternalRaw(newRaw);
-      setDisplay(formatted);
+      setInternalDigits(newDigits);
     }
-
-    requestAnimationFrame(() => {
-      input.setSelectionRange(newPos, newPos);
-    });
   }
+
+  // Typing always appends/removes at the end (calculator-style entry), so
+  // keep the caret pinned to the end after every formatted re-render.
+  useEffect(() => {
+    const el = inputRef.current;
+    if (el && document.activeElement === el) {
+      const len = el.value.length;
+      el.setSelectionRange(len, len);
+    }
+  });
 
   return (
     <>
       <input type="hidden" name={name} value={raw} />
       <input
+        ref={inputRef}
         type="text"
-        inputMode="decimal"
+        inputMode={decimals > 0 ? "decimal" : "numeric"}
         id={id}
-        value={shownDisplay}
+        value={display}
         onChange={handleChange}
         required={required}
         placeholder={placeholder}
