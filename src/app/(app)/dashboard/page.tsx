@@ -122,7 +122,6 @@ export default async function DashboardPage() {
               <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
                 <tr>
                   <th className="px-4 py-2">Depo</th>
-                  <th className="px-4 py-2 text-right">Sevkiyat Sayısı</th>
                   <th className="px-4 py-2 text-right">Toplam Tonaj</th>
                 </tr>
               </thead>
@@ -131,14 +130,26 @@ export default async function DashboardPage() {
                   <tr key={s.warehouse_id} className="border-t">
                     <td className="px-4 py-2">{s.warehouse_name}</td>
                     <td className="px-4 py-2 text-right">
-                      {s.shipment_count}
-                    </td>
-                    <td className="px-4 py-2 text-right">
                       {formatTon(s.total_tonnage)}
                     </td>
                   </tr>
                 ))}
               </tbody>
+              {filteredSummary.length > 1 && (
+                <tfoot>
+                  <tr className="border-t bg-gray-50 font-semibold">
+                    <td className="px-4 py-2">Genel Toplam</td>
+                    <td className="px-4 py-2 text-right">
+                      {formatTon(
+                        filteredSummary.reduce(
+                          (sum, s) => sum + Number(s.total_tonnage),
+                          0
+                        )
+                      )}
+                    </td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           )}
         </div>
