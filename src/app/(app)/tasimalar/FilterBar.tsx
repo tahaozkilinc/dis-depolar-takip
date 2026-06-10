@@ -32,7 +32,7 @@ export default function FilterBar({
           <select
             name="warehouse_id"
             defaultValue={defaults.warehouse_id ?? ""}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           >
             <option value="">Tümü</option>
             {warehouses.map((w) => (
@@ -48,7 +48,7 @@ export default function FilterBar({
         <select
           name="product_id"
           defaultValue={defaults.product_id ?? ""}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           <option value="">Tümü</option>
           {products.map((p) => (
@@ -63,7 +63,7 @@ export default function FilterBar({
         <select
           name="destination_id"
           defaultValue={defaults.destination_id ?? ""}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           <option value="">Tümü</option>
           {destinations.map((d) => (
@@ -79,7 +79,7 @@ export default function FilterBar({
           type="date"
           name="from"
           defaultValue={defaults.from ?? ""}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
       </div>
       <div className="flex flex-col gap-1">
@@ -88,13 +88,13 @@ export default function FilterBar({
           type="date"
           name="to"
           defaultValue={defaults.to ?? ""}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
       </div>
       <div>
         <button
           type="submit"
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
         >
           Filtrele
         </button>

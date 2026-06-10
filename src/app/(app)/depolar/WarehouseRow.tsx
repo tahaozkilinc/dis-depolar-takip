@@ -42,7 +42,7 @@ export default function WarehouseRow({ warehouse }: { warehouse: Warehouse }) {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
       </td>
       <td className="px-4 py-2">
@@ -50,7 +50,7 @@ export default function WarehouseRow({ warehouse }: { warehouse: Warehouse }) {
           type="text"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
       </td>
       <td className="px-4 py-2 text-center">
@@ -66,7 +66,7 @@ export default function WarehouseRow({ warehouse }: { warehouse: Warehouse }) {
           <button
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-md border px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
+            className="rounded-md border px-2 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 disabled:opacity-50"
           >
             Kaydet
           </button>

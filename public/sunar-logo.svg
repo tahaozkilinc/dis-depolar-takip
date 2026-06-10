@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" role="img" aria-label="Sunar Yatırım">
+  <g fill="#FBC02D">
+    <rect x="0" y="0" width="20" height="20" rx="6"/>
+    <rect x="26" y="0" width="20" height="20" rx="6"/>
+    <rect x="52" y="0" width="20" height="20" rx="6"/>
+    <rect x="0" y="26" width="20" height="20" rx="6"/>
+    <rect x="26" y="26" width="20" height="20" rx="6"/>
+    <rect x="52" y="26" width="20" height="20" rx="6"/>
+    <rect x="0" y="52" width="20" height="20" rx="6"/>
+    <rect x="26" y="52" width="20" height="20" rx="6"/>
+    <rect x="52" y="52" width="20" height="20" rx="6"/>
+    <rect x="0" y="78" width="20" height="20" rx="6"/>
+    <rect x="26" y="78" width="20" height="20" rx="6"/>
+  </g>
+  <text x="92" y="78" font-family="Georgia, 'Times New Roman', serif" font-size="84" fill="#3D7A3E">SUNAR</text>
+</svg>

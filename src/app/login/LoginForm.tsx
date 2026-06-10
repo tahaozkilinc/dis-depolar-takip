@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginForm() {
@@ -33,6 +34,15 @@ export default function LoginForm() {
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-md rounded-lg border bg-white p-6 shadow-sm">
+        <div className="mb-4 flex justify-center">
+          <Image
+            src="/sunar-logo.svg"
+            alt="Sunar"
+            width={180}
+            height={80}
+            priority
+          />
+        </div>
         <h1 className="mb-1 text-center text-xl font-semibold text-gray-900">
           Dış Depolar Takip Sistemi
         </h1>
@@ -50,7 +60,7 @@ export default function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               placeholder="ornek@firma.com"
             />
           </div>
@@ -64,7 +74,7 @@ export default function LoginForm() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               placeholder="••••••••"
             />
           </div>
@@ -78,7 +88,7 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={isPending}
-            className="mt-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+            className="mt-2 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:opacity-50"
           >
             {isPending ? "Bekleyin..." : "Giriş Yap"}
           </button>

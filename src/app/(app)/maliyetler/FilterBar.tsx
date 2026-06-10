@@ -20,7 +20,7 @@ export default function FilterBar({
           name="warehouse_id"
           defaultValue={defaults.warehouse_id ?? ""}
           required
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           {warehouses.map((w) => (
             <option key={w.id} value={w.id}>
@@ -36,7 +36,7 @@ export default function FilterBar({
           name="from"
           defaultValue={defaults.from ?? ""}
           required
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
       </div>
       <div className="flex flex-col gap-1">
@@ -46,13 +46,13 @@ export default function FilterBar({
           name="to"
           defaultValue={defaults.to ?? ""}
           required
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
       </div>
       <div>
         <button
           type="submit"
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
         >
           Hesapla
         </button>

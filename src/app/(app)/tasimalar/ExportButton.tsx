@@ -39,7 +39,7 @@ export default function ExportButton({ rows }: { rows: ExportRow[] }) {
     <button
       onClick={handleExport}
       disabled={rows.length === 0}
-      className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
     >
       Excel&apos;e Aktar
     </button>

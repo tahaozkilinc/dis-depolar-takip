@@ -70,7 +70,7 @@ export default async function DashboardPage() {
         <div>
           <Link
             href="/tasima-girisi"
-            className="inline-block rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             Taşıma Girişi Yap
           </Link>

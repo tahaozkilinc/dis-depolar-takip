@@ -45,7 +45,7 @@ export default function UserRow({
           value={role}
           onChange={(e) => setRole(e.target.value as UserRole)}
           disabled={isSelf}
-          className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-100"
+          className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-gray-100"
         >
           <option value="admin">Yönetici</option>
           <option value="depo">Depo</option>
@@ -56,7 +56,7 @@ export default function UserRow({
           <select
             value={warehouseId}
             onChange={(e) => setWarehouseId(e.target.value)}
-            className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           >
             <option value="">Seçiniz</option>
             {warehouses.map((w) => (
@@ -82,7 +82,7 @@ export default function UserRow({
         <button
           onClick={handleSave}
           disabled={isPending}
-          className="rounded-md border px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
+          className="rounded-md border px-2 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 disabled:opacity-50"
         >
           Kaydet
         </button>

@@ -64,7 +64,7 @@ export default function StockEntryForm({
             <select
               name="warehouse_id"
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             >
               <option value="">Seçiniz</option>
               {warehouses.map((w) => (
@@ -81,7 +81,7 @@ export default function StockEntryForm({
             <select
               name="product_id"
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             >
               <option value="">Seçiniz</option>
               {products.map((p) => (
@@ -96,13 +96,13 @@ export default function StockEntryForm({
                 value={newProductName}
                 onChange={(e) => setNewProductName(e.target.value)}
                 placeholder="Yeni ürün adı"
-                className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-xs focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               />
               <button
                 type="button"
                 onClick={handleAddProduct}
                 disabled={productPending}
-                className="rounded-md border px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
+                className="rounded-md border px-2 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 disabled:opacity-50"
               >
                 + Ürün Ekle
               </button>
@@ -118,7 +118,7 @@ export default function StockEntryForm({
               step="0.001"
               min="0"
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -130,7 +130,7 @@ export default function StockEntryForm({
               name="entry_date"
               defaultValue={today}
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div className="sm:col-span-2">
@@ -140,7 +140,7 @@ export default function StockEntryForm({
             <input
               type="text"
               name="note"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -160,7 +160,7 @@ export default function StockEntryForm({
           <button
             type="submit"
             disabled={isPending}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
           >
             {isPending ? "Kaydediliyor..." : "Kaydet"}
           </button>

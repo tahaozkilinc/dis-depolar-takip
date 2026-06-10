@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { UserRole } from "@/lib/types";
@@ -62,9 +63,10 @@ export default function SidebarNav({
           } w-full border-b bg-white md:block md:w-64 md:shrink-0 md:border-b-0 md:border-r md:min-h-screen`}
         >
           <div className="hidden border-b p-4 md:block">
-            <h1 className="text-lg font-semibold text-indigo-600">
+            <Image src="/sunar-logo.svg" alt="Sunar" width={140} height={62} priority />
+            <p className="mt-1 text-sm font-semibold text-brand-600">
               Dış Depolar Takip
-            </h1>
+            </p>
           </div>
           <nav className="flex flex-col gap-1 p-3">
             {items.map((item) => {
@@ -77,7 +79,7 @@ export default function SidebarNav({
                   onClick={() => setOpen(false)}
                   className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                     active
-                      ? "bg-indigo-50 text-indigo-700"
+                      ? "bg-brand-50 text-brand-700"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
