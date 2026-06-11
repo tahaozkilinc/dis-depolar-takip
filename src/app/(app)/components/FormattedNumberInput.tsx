@@ -40,8 +40,10 @@ function formatFixedDecimal(
   const padded = digits.padStart(decimals + 1, "0");
   const intPart = padded.slice(0, -decimals).replace(/^0+/, "") || "0";
   const decPart = padded.slice(-decimals);
-  const display = `${intPart}.${decPart}`;
-  return { display, raw: display };
+  const groupedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const display = `${groupedInt},${decPart}`;
+  const raw = `${intPart}.${decPart}`;
+  return { display, raw };
 }
 
 function format(digits: string, decimals: number) {
