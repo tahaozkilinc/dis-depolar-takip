@@ -45,13 +45,3 @@ export async function deleteStockEntry(id: string) {
   return { success: true };
 }
 
-export async function addProductQuick(name: string) {
-  const supabase = await createClient();
-  if (!name.trim()) return { error: "Ürün adı boş olamaz." };
-  const { error } = await supabase
-    .from("products")
-    .insert({ name: toUpperTR(name.trim()) });
-  if (error) return { error: error.message };
-  revalidatePath("/stok-girisi");
-  return { success: true };
-}

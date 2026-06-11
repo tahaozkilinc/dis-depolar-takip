@@ -3,7 +3,7 @@
 import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Product, Warehouse } from "@/lib/types";
-import { addStockEntry, addProductQuick } from "./actions";
+import { addStockEntry } from "./actions";
 import FormattedNumberInput from "../components/FormattedNumberInput";
 
 export default function StockEntryForm({
@@ -21,17 +21,29 @@ export default function StockEntryForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [newProductName, setNewProductName] = useState("");
-  const [productPending, startProductTransition] = useTransition();
+  const [warehouseText, setWarehouseText] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
   const today = new Date().toISOString().slice(0, 10);
+  const defaultProductId =
+    products.find((p) => p.name.toLocaleUpperCase("tr-TR") === "MISIR")?.id ??
+    "";
 
   function handleSubmit(formData: FormData) {
     setError(null);
     setSuccess(null);
     if (fixedWarehouseId) {
       formData.set("warehouse_id", fixedWarehouseId);
+    } else {
+      const typed = warehouseText.trim().toLocaleUpperCase("tr-TR");
+      const match = warehouses.find(
+        (w) => w.name.toLocaleUpperCase("tr-TR") === typed
+      );
+      if (!match) {
+        setError("Depo bulunamadı. Listeden geçerli bir depo seçin.");
+        return;
+      }
+      formData.set("warehouse_id", match.id);
     }
     startTransition(async () => {
       const res = await addStockEntry(formData);
@@ -40,19 +52,7 @@ export default function StockEntryForm({
       } else {
         setSuccess("Stok girişi eklendi.");
         formRef.current?.reset();
-        router.refresh();
-      }
-    });
-  }
-
-  function handleAddProduct() {
-    setError(null);
-    startProductTransition(async () => {
-      const res = await addProductQuick(newProductName);
-      if (res?.error) {
-        setError(res.error);
-      } else {
-        setNewProductName("");
+        setWarehouseText("");
         router.refresh();
       }
     });
@@ -77,18 +77,22 @@ export default function StockEntryForm({
                 className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-600"
               />
             ) : (
-              <select
-                name="warehouse_id"
-                required
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-              >
-                <option value="">Seçiniz</option>
-                {warehouses.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name}
-                  </option>
-                ))}
-              </select>
+              <>
+                <input
+                  type="text"
+                  list="stock-warehouse-options"
+                  value={warehouseText}
+                  onChange={(e) => setWarehouseText(e.target.value)}
+                  required
+                  placeholder="Depo adı yazın"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                />
+                <datalist id="stock-warehouse-options">
+                  {warehouses.map((w) => (
+                    <option key={w.id} value={w.name} />
+                  ))}
+                </datalist>
+              </>
             )}
           </div>
           <div>
@@ -98,6 +102,7 @@ export default function StockEntryForm({
             <select
               name="product_id"
               required
+              defaultValue={defaultProductId}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             >
               <option value="">Seçiniz</option>
@@ -107,23 +112,6 @@ export default function StockEntryForm({
                 </option>
               ))}
             </select>
-            <div className="mt-2 flex gap-2">
-              <input
-                type="text"
-                value={newProductName}
-                onChange={(e) => setNewProductName(e.target.value)}
-                placeholder="Yeni ürün adı"
-                className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-xs uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-              />
-              <button
-                type="button"
-                onClick={handleAddProduct}
-                disabled={productPending}
-                className="rounded-md border px-2 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 disabled:opacity-50"
-              >
-                + Ürün Ekle
-              </button>
-            </div>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
