@@ -1,10 +1,9 @@
-export type UserRole = "admin" | "depo";
+export type UserRole = "admin" | "depo" | "viewer";
 export type PricingBasis = "tonnage" | "vehicle";
 
 export interface Warehouse {
   id: string;
   name: string;
-  location: string | null;
   active: boolean;
   latitude: number | null;
   longitude: number | null;
@@ -54,6 +53,7 @@ export interface Shipment {
   vehicle_plate: string;
   tonnage: number;
   shipment_date: string;
+  shipment_time: string;
   driver_name: string | null;
   notes: string | null;
   created_by: string | null;

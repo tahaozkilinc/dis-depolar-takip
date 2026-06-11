@@ -49,6 +49,7 @@ export default function UserRow({
         >
           <option value="admin">Yönetici</option>
           <option value="depo">Depo</option>
+          <option value="viewer">Görüntüleyici</option>
         </select>
       </td>
       <td className="px-4 py-2">

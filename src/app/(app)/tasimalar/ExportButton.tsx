@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/format";
 
 interface ExportRow {
   shipment_date: string;
+  shipment_time: string;
   warehouse_name: string;
   product_name: string;
   vehicle_plate: string;
@@ -18,6 +19,7 @@ export default function ExportButton({ rows }: { rows: ExportRow[] }) {
   function handleExport() {
     const data = rows.map((r) => ({
       Tarih: formatDate(r.shipment_date),
+      Saat: r.shipment_time?.slice(0, 5) ?? "",
       Depo: r.warehouse_name,
       Ürün: r.product_name,
       Plaka: r.vehicle_plate,

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <rect width="120" height="120" rx="12" fill="#FBF3DB"/>
+  <!-- ground -->
+  <rect x="10" y="98" width="100" height="6" rx="2" fill="#E6D9AE"/>
+  <!-- main building -->
+  <rect x="22" y="60" width="76" height="38" rx="2" fill="#E0A526"/>
+  <!-- saw-tooth roof -->
+  <path d="M22 60 L40 46 L58 60 L76 46 L98 60 Z" fill="#FBC02D"/>
+  <!-- chimney -->
+  <rect x="80" y="28" width="12" height="32" fill="#C98A1C"/>
+  <!-- smoke -->
+  <circle cx="86" cy="20" r="5" fill="#D9D9D9"/>
+  <circle cx="92" cy="14" r="6" fill="#E5E5E5"/>
+  <circle cx="98" cy="22" r="4" fill="#D9D9D9"/>
+  <!-- door -->
+  <rect x="56" y="80" width="14" height="18" rx="1" fill="#fff"/>
+  <!-- windows -->
+  <rect x="30" y="70" width="10" height="10" rx="1" fill="#fff"/>
+  <rect x="46" y="70" width="10" height="10" rx="1" fill="#fff"/>
+  <rect x="80" y="70" width="10" height="10" rx="1" fill="#fff"/>
+</svg>

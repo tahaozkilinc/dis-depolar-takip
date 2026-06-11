@@ -195,12 +195,22 @@ export default function ShipmentForm({
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
+              Saat (opsiyonel)
+            </label>
+            <input
+              type="time"
+              name="shipment_time"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               Sürücü Adı (opsiyonel)
             </label>
             <input
               type="text"
               name="driver_name"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div className="sm:col-span-2">
@@ -210,7 +220,7 @@ export default function ShipmentForm({
             <input
               type="text"
               name="notes"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
         </div>

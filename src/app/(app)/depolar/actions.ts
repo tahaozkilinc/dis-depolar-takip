@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { toUpperTR } from "@/lib/text";
 
 function parseCoordinate(value: FormDataEntryValue | null): number | null {
   const trimmed = (value as string)?.trim();
@@ -12,8 +13,7 @@ function parseCoordinate(value: FormDataEntryValue | null): number | null {
 
 export async function addWarehouse(formData: FormData) {
   const supabase = await createClient();
-  const name = (formData.get("name") as string)?.trim();
-  const location = (formData.get("location") as string)?.trim() || null;
+  const name = toUpperTR((formData.get("name") as string)?.trim() ?? "");
   const latitude = parseCoordinate(formData.get("latitude"));
   const longitude = parseCoordinate(formData.get("longitude"));
 
@@ -21,7 +21,7 @@ export async function addWarehouse(formData: FormData) {
 
   const { error } = await supabase
     .from("warehouses")
-    .insert({ name, location, active: true, latitude, longitude });
+    .insert({ name, active: true, latitude, longitude });
 
   if (error) return { error: error.message };
   revalidatePath("/depolar");
@@ -32,12 +32,12 @@ export async function updateWarehouse(
   id: string,
   data: {
     name: string;
-    location: string | null;
     active: boolean;
     latitude: number | null;
     longitude: number | null;
   }
 ) {
+  data.name = toUpperTR(data.name.trim());
   const supabase = await createClient();
   const { error } = await supabase
     .from("warehouses")

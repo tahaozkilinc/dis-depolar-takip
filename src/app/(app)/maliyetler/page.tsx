@@ -1,6 +1,8 @@
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatTL, formatTon } from "@/lib/format";
 import type {
+  DailyStorageCostToday,
   PricingBasis,
   StorageCostPeriodRow,
   Warehouse,
@@ -41,12 +43,31 @@ export default async function MaliyetlerPage({
   const params = await searchParams;
   const supabase = await createClient();
 
-  const { data: warehouses } = await supabase
-    .from("warehouses")
-    .select("*")
-    .order("name");
+  const [{ data: warehouses }, { data: storageToday }] = await Promise.all([
+    supabase.from("warehouses").select("*").order("name"),
+    supabase.from("daily_storage_cost_today").select("*"),
+  ]);
 
   const warehouseList = (warehouses ?? []) as Warehouse[];
+
+  const storageByWarehouse = new Map<
+    string,
+    { warehouse_name: string; total_remaining: number; total_cost: number }
+  >();
+  for (const row of (storageToday ?? []) as DailyStorageCostToday[]) {
+    const existing = storageByWarehouse.get(row.warehouse_id) ?? {
+      warehouse_name: row.warehouse_name,
+      total_remaining: 0,
+      total_cost: 0,
+    };
+    existing.total_remaining += Number(row.remaining_tonnage);
+    existing.total_cost += Number(row.storage_cost);
+    storageByWarehouse.set(row.warehouse_id, existing);
+  }
+  const storageGrandTotal = Array.from(storageByWarehouse.values()).reduce(
+    (sum, w) => sum + w.total_cost,
+    0
+  );
   const warehouseId =
     (params.warehouse_id as string) || warehouseList[0]?.id || "";
   const from = (params.from as string) || firstDayOfMonth();
@@ -96,6 +117,48 @@ export default async function MaliyetlerPage({
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-semibold text-gray-900">Maliyet Raporu</h1>
+
+      {/* Today's storage cost cards per warehouse */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold text-gray-700">
+          Bugünkü Depolama Maliyeti (Depo Bazlı)
+        </h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {storageByWarehouse.size === 0 && (
+            <p className="text-sm text-gray-500">Veri bulunamadı.</p>
+          )}
+          {Array.from(storageByWarehouse.entries()).map(([id, w]) => (
+            <div
+              key={id}
+              className="flex items-center gap-4 rounded-lg border bg-white p-4 shadow-sm"
+            >
+              <Image src="/silo.svg" alt="" width={48} height={48} />
+              <div>
+                <div className="text-sm font-medium text-gray-500">
+                  {w.warehouse_name}
+                </div>
+                <div className="mt-1 text-xl font-semibold text-gray-900">
+                  {formatTL(w.total_cost)}
+                </div>
+                <div className="text-xs text-gray-400">
+                  {formatTon(w.total_remaining)} ton
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className="flex items-center gap-4 rounded-lg border bg-brand-50 p-4 shadow-sm">
+            <div>
+              <div className="text-sm font-medium text-gray-500">
+                Genel Toplam
+              </div>
+              <div className="mt-1 text-xl font-semibold text-gray-900">
+                {formatTL(storageGrandTotal)}
+              </div>
+              <div className="text-xs text-gray-400">Tüm depolar</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <FilterBar
         warehouses={warehouseList}

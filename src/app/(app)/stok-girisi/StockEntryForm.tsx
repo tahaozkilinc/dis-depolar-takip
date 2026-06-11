@@ -9,9 +9,13 @@ import FormattedNumberInput from "../components/FormattedNumberInput";
 export default function StockEntryForm({
   warehouses,
   products,
+  fixedWarehouseId,
+  fixedWarehouseName,
 }: {
   warehouses: Warehouse[];
   products: Product[];
+  fixedWarehouseId?: string | null;
+  fixedWarehouseName?: string | null;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -26,6 +30,9 @@ export default function StockEntryForm({
   function handleSubmit(formData: FormData) {
     setError(null);
     setSuccess(null);
+    if (fixedWarehouseId) {
+      formData.set("warehouse_id", fixedWarehouseId);
+    }
     startTransition(async () => {
       const res = await addStockEntry(formData);
       if (res?.error) {
@@ -62,18 +69,27 @@ export default function StockEntryForm({
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Depo
             </label>
-            <select
-              name="warehouse_id"
-              required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-            >
-              <option value="">Seçiniz</option>
-              {warehouses.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-            </select>
+            {fixedWarehouseId ? (
+              <input
+                type="text"
+                disabled
+                value={fixedWarehouseName ?? ""}
+                className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-600"
+              />
+            ) : (
+              <select
+                name="warehouse_id"
+                required
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              >
+                <option value="">Seçiniz</option>
+                {warehouses.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -97,7 +113,7 @@ export default function StockEntryForm({
                 value={newProductName}
                 onChange={(e) => setNewProductName(e.target.value)}
                 placeholder="Yeni ürün adı"
-                className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-xs focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-xs uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               />
               <button
                 type="button"
@@ -139,7 +155,7 @@ export default function StockEntryForm({
             <input
               type="text"
               name="note"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatTL } from "@/lib/format";
-import type { Destination, PricingBasis, Warehouse } from "@/lib/types";
+import type { Destination, PricingBasis, Profile, Warehouse } from "@/lib/types";
 import PricingForm from "./PricingForm";
 import DeleteAgreementButton from "./DeleteAgreementButton";
 
@@ -21,9 +21,13 @@ function basisLabel(basis: PricingBasis): string {
 
 export default async function FiyatAnlasmalariPage() {
   const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  const [{ data: warehouses }, { data: destinations }, { data: agreements }] =
+  const [{ data: profile }, { data: warehouses }, { data: destinations }, { data: agreements }] =
     await Promise.all([
+      supabase.from("profiles").select("*").eq("id", session!.user.id).maybeSingle<Profile>(),
       supabase.from("warehouses").select("*").order("name"),
       supabase.from("destinations").select("*").order("name"),
       supabase
@@ -35,6 +39,7 @@ export default async function FiyatAnlasmalariPage() {
         .order("valid_from", { ascending: false }),
     ]);
 
+  const isViewer = profile?.role === "viewer";
   const rows = (agreements ?? []) as unknown as AgreementRow[];
 
   return (
@@ -43,10 +48,12 @@ export default async function FiyatAnlasmalariPage() {
         Fiyat Anlaşmaları
       </h1>
 
-      <PricingForm
-        warehouses={(warehouses ?? []) as Warehouse[]}
-        destinations={(destinations ?? []) as Destination[]}
-      />
+      {!isViewer && (
+        <PricingForm
+          warehouses={(warehouses ?? []) as Warehouse[]}
+          destinations={(destinations ?? []) as Destination[]}
+        />
+      )}
 
       <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
         <table className="w-full text-sm">
@@ -58,13 +65,13 @@ export default async function FiyatAnlasmalariPage() {
               <th className="px-4 py-2 text-right">Birim Fiyat</th>
               <th className="px-4 py-2">Geçerlilik</th>
               <th className="px-4 py-2">Not</th>
-              <th className="px-4 py-2"></th>
+              {!isViewer && <th className="px-4 py-2"></th>}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-4 text-center text-gray-500">
+                <td colSpan={isViewer ? 6 : 7} className="px-4 py-4 text-center text-gray-500">
                   Kayıt bulunamadı.
                 </td>
               </tr>
@@ -82,9 +89,11 @@ export default async function FiyatAnlasmalariPage() {
                   {r.valid_to ? formatDate(r.valid_to) : "Süresiz"}
                 </td>
                 <td className="px-4 py-2">{r.note ?? "-"}</td>
-                <td className="px-4 py-2 text-right">
-                  <DeleteAgreementButton id={r.id} />
-                </td>
+                {!isViewer && (
+                  <td className="px-4 py-2 text-right">
+                    <DeleteAgreementButton id={r.id} />
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

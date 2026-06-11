@@ -38,17 +38,7 @@ export default function AddWarehouseForm() {
             type="text"
             name="name"
             required
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          />
-        </div>
-        <div className="flex-1">
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Konum (opsiyonel)
-          </label>
-          <input
-            type="text"
-            name="location"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
         <div className="sm:w-32">

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { toUpperTR } from "@/lib/text";
 
 export async function addPricingAgreement(formData: FormData) {
   const supabase = await createClient();
@@ -16,7 +17,8 @@ export async function addPricingAgreement(formData: FormData) {
   const unit_price = parseFloat(formData.get("unit_price") as string);
   const valid_from = formData.get("valid_from") as string;
   const valid_to = (formData.get("valid_to") as string) || null;
-  const note = (formData.get("note") as string) || null;
+  const noteRaw = (formData.get("note") as string)?.trim();
+  const note = noteRaw ? toUpperTR(noteRaw) : null;
 
   if (!warehouse_id || !basis || !unit_price || !valid_from) {
     return { error: "Lütfen tüm zorunlu alanları doldurun." };

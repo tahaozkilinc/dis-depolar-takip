@@ -2,10 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { toUpperTR } from "@/lib/text";
 
 export async function addProduct(formData: FormData) {
   const supabase = await createClient();
-  const name = (formData.get("name") as string)?.trim();
+  const name = toUpperTR((formData.get("name") as string)?.trim() ?? "");
   const unit = (formData.get("unit") as string)?.trim() || "ton";
   if (!name) return { error: "Ürün adı zorunludur." };
   const { error } = await supabase.from("products").insert({ name, unit });
@@ -31,7 +32,7 @@ function parseCoordinate(value: FormDataEntryValue | null): number | null {
 
 export async function addDestination(formData: FormData) {
   const supabase = await createClient();
-  const name = (formData.get("name") as string)?.trim();
+  const name = toUpperTR((formData.get("name") as string)?.trim() ?? "");
   if (!name) return { error: "Varış noktası adı zorunludur." };
   const latitude = parseCoordinate(formData.get("latitude"));
   const longitude = parseCoordinate(formData.get("longitude"));

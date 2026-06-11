@@ -1,12 +1,20 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { formatTL, formatTon } from "@/lib/format";
+import { formatTon } from "@/lib/format";
 import type {
   Profile,
   WarehouseTotal,
   TodayShipmentsSummary,
-  DailyStorageCostToday,
 } from "@/lib/types";
+
+interface TodayShipmentRow {
+  id: string;
+  vehicle_plate: string;
+  tonnage: number;
+  warehouses: { name: string } | null;
+  destinations: { name: string } | null;
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -14,21 +22,18 @@ export default async function DashboardPage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const [
-    { data: profile },
-    { data: totals },
-    { data: todaySummary },
-    { data: storageToday },
-  ] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session!.user.id)
-      .maybeSingle<Profile>(),
-    supabase.from("warehouse_totals").select("*"),
-    supabase.from("today_shipments_summary").select("*"),
-    supabase.from("daily_storage_cost_today").select("*"),
-  ]);
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [{ data: profile }, { data: totals }, { data: todaySummary }] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session!.user.id)
+        .maybeSingle<Profile>(),
+      supabase.from("warehouse_totals").select("*"),
+      supabase.from("today_shipments_summary").select("*"),
+    ]);
 
   const isDepo = profile?.role === "depo";
   const myWarehouseId = profile?.warehouse_id ?? null;
@@ -41,29 +46,18 @@ export default async function DashboardPage() {
     (s) => !isDepo || s.warehouse_id === myWarehouseId
   );
 
-  const storageRows: DailyStorageCostToday[] = (storageToday ?? []).filter(
-    (s) => !isDepo || s.warehouse_id === myWarehouseId
-  );
+  let todayShipmentsQuery = supabase
+    .from("shipments")
+    .select("id, vehicle_plate, tonnage, warehouses(name), destinations(name)")
+    .eq("shipment_date", today)
+    .order("created_at", { ascending: false });
 
-  // Group storage cost by warehouse
-  const storageByWarehouse = new Map<
-    string,
-    { warehouse_name: string; total_remaining: number; total_cost: number }
-  >();
-  for (const row of storageRows) {
-    const existing = storageByWarehouse.get(row.warehouse_id) ?? {
-      warehouse_name: row.warehouse_name,
-      total_remaining: 0,
-      total_cost: 0,
-    };
-    existing.total_remaining += Number(row.remaining_tonnage);
-    existing.total_cost += Number(row.storage_cost);
-    storageByWarehouse.set(row.warehouse_id, existing);
+  if (isDepo && myWarehouseId) {
+    todayShipmentsQuery = todayShipmentsQuery.eq("warehouse_id", myWarehouseId);
   }
-  const storageGrandTotal = Array.from(storageByWarehouse.values()).reduce(
-    (sum, w) => sum + w.total_cost,
-    0
-  );
+
+  const { data: todayShipments } = await todayShipmentsQuery;
+  const todayShipmentRows = (todayShipments ?? []) as unknown as TodayShipmentRow[];
 
   return (
     <div className="flex flex-col gap-6">
@@ -92,16 +86,21 @@ export default async function DashboardPage() {
           {filteredTotals.map((w) => (
             <div
               key={w.warehouse_id}
-              className="rounded-lg border bg-white p-4 shadow-sm"
+              className="flex items-center gap-4 rounded-lg border bg-white p-4 shadow-sm"
             >
-              <div className="text-sm font-medium text-gray-500">
-                {w.warehouse_name}
+              <Image src="/silo.svg" alt="" width={48} height={48} />
+              <div>
+                <div className="text-sm font-medium text-gray-500">
+                  {w.warehouse_name}
+                </div>
+                <div className="mt-1 text-2xl font-semibold text-gray-900">
+                  {formatTon(w.total_remaining_tonnage)}{" "}
+                  <span className="text-sm font-normal text-gray-500">
+                    ton
+                  </span>
+                </div>
+                <div className="text-xs text-gray-400">Kalan stok</div>
               </div>
-              <div className="mt-1 text-2xl font-semibold text-gray-900">
-                {formatTon(w.total_remaining_tonnage)}{" "}
-                <span className="text-sm font-normal text-gray-500">ton</span>
-              </div>
-              <div className="text-xs text-gray-400">Kalan stok</div>
             </div>
           ))}
         </div>
@@ -155,50 +154,40 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Today's estimated storage cost - admin sees all, depo sees own */}
+      {/* Today's transfers (from -> to) */}
       <section>
         <h2 className="mb-3 text-sm font-semibold text-gray-700">
-          Bugünkü Tahmini Depolama Maliyeti
+          Bugünkü Taşımalar (Nereden - Nereye)
         </h2>
         <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
-          {storageByWarehouse.size === 0 ? (
-            <p className="p-4 text-sm text-gray-500">Veri bulunamadı.</p>
+          {todayShipmentRows.length === 0 ? (
+            <p className="p-4 text-sm text-gray-500">
+              Bugün henüz taşıma yok.
+            </p>
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
                 <tr>
                   <th className="px-4 py-2">Depo</th>
-                  <th className="px-4 py-2 text-right">Kalan Tonaj</th>
-                  <th className="px-4 py-2 text-right">Tahmini Maliyet</th>
+                  <th className="px-4 py-2">Varış</th>
+                  <th className="px-4 py-2">Plaka</th>
+                  <th className="px-4 py-2 text-right">Tonaj</th>
                 </tr>
               </thead>
               <tbody>
-                {Array.from(storageByWarehouse.entries()).map(
-                  ([id, w]) => (
-                    <tr key={id} className="border-t">
-                      <td className="px-4 py-2">{w.warehouse_name}</td>
-                      <td className="px-4 py-2 text-right">
-                        {formatTon(w.total_remaining)}
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        {formatTL(w.total_cost)}
-                      </td>
-                    </tr>
-                  )
-                )}
-              </tbody>
-              {!isDepo && (
-                <tfoot>
-                  <tr className="border-t bg-gray-50 font-semibold">
-                    <td className="px-4 py-2" colSpan={2}>
-                      Genel Toplam
+                {todayShipmentRows.map((s) => (
+                  <tr key={s.id} className="border-t">
+                    <td className="px-4 py-2">{s.warehouses?.name ?? "-"}</td>
+                    <td className="px-4 py-2">
+                      {s.destinations?.name ?? "-"}
                     </td>
+                    <td className="px-4 py-2">{s.vehicle_plate}</td>
                     <td className="px-4 py-2 text-right">
-                      {formatTL(storageGrandTotal)}
+                      {formatTon(s.tonnage)}
                     </td>
                   </tr>
-                </tfoot>
-              )}
+                ))}
+              </tbody>
             </table>
           )}
         </div>

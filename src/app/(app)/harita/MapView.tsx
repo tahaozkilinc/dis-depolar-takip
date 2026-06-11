@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -64,12 +65,6 @@ export default function MapView({
               <strong>{w.name}</strong>
               <br />
               Depo
-              {w.location && (
-                <>
-                  <br />
-                  {w.location}
-                </>
-              )}
             </Popup>
           </Marker>
         ))}
@@ -84,11 +79,11 @@ export default function MapView({
         ))}
       </MapContainer>
       <div className="flex gap-4 border-t bg-gray-50 px-4 py-2 text-xs text-gray-600">
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-full bg-brand-600" /> Depo
+        <span className="flex items-center gap-2">
+          <Image src="/silo.svg" alt="" width={20} height={20} /> Depo
         </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-full bg-accent-500" /> Varış Noktası
+        <span className="flex items-center gap-2">
+          <Image src="/factory.svg" alt="" width={20} height={20} /> Varış Noktası (Fabrika)
         </span>
       </div>
     </div>

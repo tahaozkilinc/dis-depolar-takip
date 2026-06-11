@@ -7,6 +7,7 @@ import ExportButton from "./ExportButton";
 interface ShipmentRow {
   id: string;
   shipment_date: string;
+  shipment_time: string;
   vehicle_plate: string;
   tonnage: number;
   driver_name: string | null;
@@ -44,6 +45,7 @@ export default async function TasimalarPage({
   ]);
 
   const isAdmin = profile?.role === "admin";
+  const isViewer = profile?.role === "viewer";
 
   const warehouseId = (params.warehouse_id as string) || "";
   const productId = (params.product_id as string) || "";
@@ -54,14 +56,14 @@ export default async function TasimalarPage({
   let query = supabase
     .from("shipments")
     .select(
-      "id, shipment_date, vehicle_plate, tonnage, driver_name, notes, warehouses(name), products(name), destinations(name)"
+      "id, shipment_date, shipment_time, vehicle_plate, tonnage, driver_name, notes, warehouses(name), products(name), destinations(name)"
     )
     .order("shipment_date", { ascending: false })
     .order("created_at", { ascending: false });
 
-  if (!isAdmin && profile?.warehouse_id) {
+  if (!isAdmin && !isViewer && profile?.warehouse_id) {
     query = query.eq("warehouse_id", profile.warehouse_id);
-  } else if (isAdmin && warehouseId) {
+  } else if ((isAdmin || isViewer) && warehouseId) {
     query = query.eq("warehouse_id", warehouseId);
   }
 
@@ -77,6 +79,7 @@ export default async function TasimalarPage({
 
   const exportRows = rows.map((r) => ({
     shipment_date: r.shipment_date,
+    shipment_time: r.shipment_time,
     warehouse_name: r.warehouses?.name ?? "-",
     product_name: r.products?.name ?? "-",
     vehicle_plate: r.vehicle_plate,
@@ -99,7 +102,7 @@ export default async function TasimalarPage({
         warehouses={(warehouses ?? []) as Warehouse[]}
         products={(products ?? []) as Product[]}
         destinations={(destinations ?? []) as Destination[]}
-        showWarehouse={isAdmin}
+        showWarehouse={isAdmin || isViewer}
         defaults={{
           warehouse_id: warehouseId,
           product_id: productId,
@@ -114,6 +117,7 @@ export default async function TasimalarPage({
           <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
             <tr>
               <th className="px-4 py-2">Tarih</th>
+              <th className="px-4 py-2">Saat</th>
               <th className="px-4 py-2">Depo</th>
               <th className="px-4 py-2">Ürün</th>
               <th className="px-4 py-2">Plaka</th>
@@ -125,7 +129,7 @@ export default async function TasimalarPage({
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-4 text-center text-gray-500">
+                <td colSpan={8} className="px-4 py-4 text-center text-gray-500">
                   Kayıt bulunamadı.
                 </td>
               </tr>
@@ -133,6 +137,7 @@ export default async function TasimalarPage({
             {rows.map((r) => (
               <tr key={r.id} className="border-t">
                 <td className="px-4 py-2">{formatDate(r.shipment_date)}</td>
+                <td className="px-4 py-2">{r.shipment_time?.slice(0, 5)}</td>
                 <td className="px-4 py-2">{r.warehouses?.name ?? "-"}</td>
                 <td className="px-4 py-2">{r.products?.name ?? "-"}</td>
                 <td className="px-4 py-2">{r.vehicle_plate}</td>
@@ -145,7 +150,7 @@ export default async function TasimalarPage({
           {rows.length > 0 && (
             <tfoot>
               <tr className="border-t bg-gray-50 font-semibold">
-                <td className="px-4 py-2" colSpan={4}>
+                <td className="px-4 py-2" colSpan={5}>
                   Toplam
                 </td>
                 <td className="px-4 py-2 text-right">

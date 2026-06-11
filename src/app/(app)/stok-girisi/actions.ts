@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { toUpperTR } from "@/lib/text";
 
 export async function addStockEntry(formData: FormData) {
   const supabase = await createClient();
@@ -14,7 +15,8 @@ export async function addStockEntry(formData: FormData) {
   const product_id = formData.get("product_id") as string;
   const tonnage = parseFloat(formData.get("tonnage") as string);
   const entry_date = formData.get("entry_date") as string;
-  const note = (formData.get("note") as string) || null;
+  const noteRaw = (formData.get("note") as string)?.trim();
+  const note = noteRaw ? toUpperTR(noteRaw) : null;
 
   if (!warehouse_id || !product_id || !tonnage || tonnage <= 0) {
     return { error: "Lütfen tüm zorunlu alanları doldurun." };
@@ -48,7 +50,7 @@ export async function addProductQuick(name: string) {
   if (!name.trim()) return { error: "Ürün adı boş olamaz." };
   const { error } = await supabase
     .from("products")
-    .insert({ name: name.trim() });
+    .insert({ name: toUpperTR(name.trim()) });
   if (error) return { error: error.message };
   revalidatePath("/stok-girisi");
   return { success: true };

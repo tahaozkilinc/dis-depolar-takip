@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { toUpperTR } from "@/lib/text";
 
 export async function addStorageRate(formData: FormData) {
   const supabase = await createClient();
@@ -16,7 +17,8 @@ export async function addStorageRate(formData: FormData) {
   );
   const valid_from = formData.get("valid_from") as string;
   const valid_to = (formData.get("valid_to") as string) || null;
-  const note = (formData.get("note") as string) || null;
+  const noteRaw = (formData.get("note") as string)?.trim();
+  const note = noteRaw ? toUpperTR(noteRaw) : null;
 
   if (!warehouse_id || !price_per_ton_per_day || !valid_from) {
     return { error: "Lütfen tüm zorunlu alanları doldurun." };

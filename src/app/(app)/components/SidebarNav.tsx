@@ -17,18 +17,24 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", roles: ["admin", "depo"] },
-  { href: "/stok-girisi", label: "Stok Girişi", roles: ["admin"] },
-  { href: "/tasima-girisi", label: "Taşıma Girişi", roles: ["admin", "depo"] },
-  { href: "/tasimalar", label: "Taşımalar (Tonaj Listesi)", roles: ["admin", "depo"] },
-  { href: "/harita", label: "Harita", roles: ["admin", "depo"] },
-  { href: "/maliyetler", label: "Maliyet Raporu", roles: ["admin"] },
-  { href: "/depolar", label: "Depolar", roles: ["admin"] },
-  { href: "/urunler", label: "Ürünler & Varış Noktaları", roles: ["admin"] },
-  { href: "/fiyat-anlasmalari", label: "Fiyat Anlaşmaları", roles: ["admin"] },
-  { href: "/depolama-ucretleri", label: "Depolama Ücretleri", roles: ["admin"] },
+  { href: "/dashboard", label: "Dashboard", roles: ["admin", "depo", "viewer"] },
+  { href: "/stok-girisi", label: "Stok Girişi", roles: ["admin", "depo", "viewer"] },
+  { href: "/tasima-girisi", label: "Taşıma Girişi", roles: ["admin", "depo", "viewer"] },
+  { href: "/tasimalar", label: "Taşımalar (Tonaj Listesi)", roles: ["admin", "depo", "viewer"] },
+  { href: "/harita", label: "Harita", roles: ["admin", "depo", "viewer"] },
+  { href: "/maliyetler", label: "Maliyet Raporu", roles: ["admin", "viewer"] },
+  { href: "/depolar", label: "Depolar", roles: ["admin", "viewer"] },
+  { href: "/urunler", label: "Ürünler & Varış Noktaları", roles: ["admin", "viewer"] },
+  { href: "/fiyat-anlasmalari", label: "Fiyat Anlaşmaları", roles: ["admin", "viewer"] },
+  { href: "/depolama-ucretleri", label: "Depolama Ücretleri", roles: ["admin", "viewer"] },
   { href: "/kullanicilar", label: "Kullanıcılar", roles: ["admin"] },
 ];
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  admin: "Yönetici",
+  depo: "Depo Kullanıcısı",
+  viewer: "Görüntüleyici",
+};
 
 export default function SidebarNav({
   role,
@@ -96,7 +102,7 @@ export default function SidebarNav({
             <div className="mb-2 px-1 text-sm">
               <div className="font-medium">{fullName}</div>
               <div className="text-gray-500">
-                {role === "admin" ? "Yönetici" : "Depo Kullanıcısı"}
+                {ROLE_LABELS[role]}
               </div>
             </div>
             <form action={signOut}>
@@ -122,7 +128,7 @@ export default function SidebarNav({
               <div className="text-right text-sm">
                 <div className="font-medium">{fullName}</div>
                 <div className="text-gray-500">
-                  {role === "admin" ? "Yönetici" : "Depo Kullanıcısı"}
+                  {ROLE_LABELS[role]}
                 </div>
               </div>
               <form action={signOut}>

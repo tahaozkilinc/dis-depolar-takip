@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Item {
   id: string;
@@ -13,17 +14,21 @@ interface Item {
 
 export default function CrudSection({
   title,
+  icon,
   items,
   showUnit,
   showLatLng,
+  readOnly,
   onAdd,
   onDelete,
   onUpdateLocation,
 }: {
   title: string;
+  icon?: string;
   items: Item[];
   showUnit: boolean;
   showLatLng?: boolean;
+  readOnly?: boolean;
   onAdd: (formData: FormData) => Promise<{ error?: string; success?: boolean }>;
   onDelete: (id: string) => Promise<{ error?: string; success?: boolean }>;
   onUpdateLocation?: (
@@ -57,76 +62,83 @@ export default function CrudSection({
     });
   }
 
+  const colCount = (showUnit || showLatLng ? 2 : 1) + (readOnly ? 1 : 2);
+
   return (
     <div className="rounded-lg border bg-white p-4 shadow-sm">
-      <h2 className="mb-4 text-sm font-semibold text-gray-700">{title}</h2>
-      <form
-        ref={formRef}
-        action={handleAdd}
-        className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end"
-      >
-        <div className="flex-1">
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Ad
-          </label>
-          <input
-            type="text"
-            name="name"
-            required
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          />
-        </div>
-        {showUnit && (
-          <div className="sm:w-32">
+      <div className="mb-4 flex items-center gap-3">
+        {icon && <Image src={icon} alt="" width={40} height={40} />}
+        <h2 className="text-sm font-semibold text-gray-700">{title}</h2>
+      </div>
+      {!readOnly && (
+        <form
+          ref={formRef}
+          action={handleAdd}
+          className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end"
+        >
+          <div className="flex-1">
             <label className="mb-1 block text-sm font-medium text-gray-700">
-              Birim
+              Ad
             </label>
             <input
               type="text"
-              name="unit"
-              defaultValue="ton"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              name="name"
+              required
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
-        )}
-        {showLatLng && (
-          <>
-            <div className="sm:w-28">
+          {showUnit && (
+            <div className="sm:w-32">
               <label className="mb-1 block text-sm font-medium text-gray-700">
-                Enlem
+                Birim
               </label>
               <input
-                type="number"
-                step="any"
-                name="latitude"
-                placeholder="41.0082"
+                type="text"
+                name="unit"
+                defaultValue="ton"
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               />
             </div>
-            <div className="sm:w-28">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Boylam
-              </label>
-              <input
-                type="number"
-                step="any"
-                name="longitude"
-                placeholder="28.9784"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-              />
-            </div>
-          </>
-        )}
-        <div>
-          <button
-            type="submit"
-            disabled={isPending}
-            className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
-          >
-            Ekle
-          </button>
-        </div>
-      </form>
+          )}
+          {showLatLng && (
+            <>
+              <div className="sm:w-28">
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  Enlem
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  name="latitude"
+                  placeholder="41.0082"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                />
+              </div>
+              <div className="sm:w-28">
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  Boylam
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  name="longitude"
+                  placeholder="28.9784"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                />
+              </div>
+            </>
+          )}
+          <div>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+            >
+              Ekle
+            </button>
+          </div>
+        </form>
+      )}
       {error && <p className="mb-2 text-sm text-red-600">{error}</p>}
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
@@ -135,14 +147,14 @@ export default function CrudSection({
               <th className="px-4 py-2">Ad</th>
               {showUnit && <th className="px-4 py-2">Birim</th>}
               {showLatLng && <th className="px-4 py-2">Enlem / Boylam</th>}
-              <th className="px-4 py-2"></th>
+              {!readOnly && <th className="px-4 py-2"></th>}
             </tr>
           </thead>
           <tbody>
             {items.length === 0 && (
               <tr>
                 <td
-                  colSpan={showUnit || showLatLng ? 3 : 2}
+                  colSpan={colCount}
                   className="px-4 py-4 text-center text-gray-500"
                 >
                   Kayıt bulunamadı.
@@ -153,20 +165,28 @@ export default function CrudSection({
               <tr key={item.id} className="border-t">
                 <td className="px-4 py-2">{item.name}</td>
                 {showUnit && <td className="px-4 py-2">{item.unit}</td>}
-                {showLatLng && onUpdateLocation && (
+                {showLatLng && (
                   <td className="px-4 py-2">
-                    <LocationCell item={item} onUpdateLocation={onUpdateLocation} />
+                    {!readOnly && onUpdateLocation ? (
+                      <LocationCell item={item} onUpdateLocation={onUpdateLocation} />
+                    ) : item.latitude != null && item.longitude != null ? (
+                      `${item.latitude}, ${item.longitude}`
+                    ) : (
+                      "-"
+                    )}
                   </td>
                 )}
-                <td className="px-4 py-2 text-right">
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    disabled={isPending}
-                    className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
-                  >
-                    Sil
-                  </button>
-                </td>
+                {!readOnly && (
+                  <td className="px-4 py-2 text-right">
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      disabled={isPending}
+                      className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+                    >
+                      Sil
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

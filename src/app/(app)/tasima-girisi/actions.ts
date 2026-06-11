@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { toUpperTR } from "@/lib/text";
 
 export async function addShipment(formData: FormData) {
   const supabase = await createClient();
@@ -12,14 +13,21 @@ export async function addShipment(formData: FormData) {
 
   const warehouse_id = formData.get("warehouse_id") as string;
   const product_id = formData.get("product_id") as string;
-  const vehicle_plate = (formData.get("vehicle_plate") as string)
-    .trim()
-    .toUpperCase();
+  const vehicle_plate = toUpperTR((formData.get("vehicle_plate") as string).trim());
   const tonnage = parseFloat(formData.get("tonnage") as string);
   const destination_id = (formData.get("destination_id") as string) || null;
   const shipment_date = formData.get("shipment_date") as string;
-  const driver_name = (formData.get("driver_name") as string) || null;
-  const notes = (formData.get("notes") as string) || null;
+  const shipment_time =
+    (formData.get("shipment_time") as string)?.trim() ||
+    new Date().toLocaleTimeString("tr-TR", {
+      timeZone: "Europe/Istanbul",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  const driverNameRaw = (formData.get("driver_name") as string)?.trim();
+  const driver_name = driverNameRaw ? toUpperTR(driverNameRaw) : null;
+  const notesRaw = (formData.get("notes") as string)?.trim();
+  const notes = notesRaw ? toUpperTR(notesRaw) : null;
 
   if (!warehouse_id || !product_id || !vehicle_plate || !tonnage || tonnage <= 0) {
     return { error: "Lütfen tüm zorunlu alanları doldurun." };
@@ -32,6 +40,7 @@ export async function addShipment(formData: FormData) {
     tonnage,
     destination_id,
     shipment_date,
+    shipment_time,
     driver_name,
     notes,
     created_by: user.id,

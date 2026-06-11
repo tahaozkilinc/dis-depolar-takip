@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatTon } from "@/lib/format";
-import type { Product, Warehouse, StockBalance } from "@/lib/types";
+import type { Product, Profile, Warehouse, StockBalance } from "@/lib/types";
 import StockEntryForm from "./StockEntryForm";
 import DeleteEntryButton from "./DeleteEntryButton";
 
@@ -11,37 +11,65 @@ interface StockEntryRow {
   tonnage: number;
   entry_date: string;
   note: string | null;
+  created_by: string | null;
   warehouses: { name: string } | null;
   products: { name: string } | null;
 }
 
 export default async function StokGirisiPage() {
   const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session!.user;
 
   const [
+    { data: profile },
     { data: warehouses },
     { data: products },
-    { data: entries },
-    { data: balances },
   ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle<Profile>(),
     supabase
       .from("warehouses")
       .select("*")
       .eq("active", true)
       .order("name"),
     supabase.from("products").select("*").order("name"),
-    supabase
-      .from("stock_entries")
-      .select(
-        "id, warehouse_id, product_id, tonnage, entry_date, note, warehouses(name), products(name)"
-      )
-      .order("created_at", { ascending: false })
-      .limit(50),
-    supabase
-      .from("stock_balances")
-      .select("*")
-      .order("warehouse_name")
-      .order("product_name"),
+  ]);
+
+  const isAdmin = profile?.role === "admin";
+  const isViewer = profile?.role === "viewer";
+  const fixedWarehouseId = isAdmin || isViewer ? null : profile?.warehouse_id ?? null;
+  const fixedWarehouseName = fixedWarehouseId
+    ? (warehouses ?? []).find((w) => w.id === fixedWarehouseId)?.name ?? null
+    : null;
+
+  let entriesQuery = supabase
+    .from("stock_entries")
+    .select(
+      "id, warehouse_id, product_id, tonnage, entry_date, note, created_by, warehouses(name), products(name)"
+    )
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  let balancesQuery = supabase
+    .from("stock_balances")
+    .select("*")
+    .order("warehouse_name")
+    .order("product_name");
+
+  if (fixedWarehouseId) {
+    entriesQuery = entriesQuery.eq("warehouse_id", fixedWarehouseId);
+    balancesQuery = balancesQuery.eq("warehouse_id", fixedWarehouseId);
+  }
+
+  const [{ data: entries }, { data: balances }] = await Promise.all([
+    entriesQuery,
+    balancesQuery,
   ]);
 
   const stockEntries = (entries ?? []) as unknown as StockEntryRow[];
@@ -51,10 +79,14 @@ export default async function StokGirisiPage() {
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-semibold text-gray-900">Stok Girişi</h1>
 
-      <StockEntryForm
-        warehouses={(warehouses ?? []) as Warehouse[]}
-        products={(products ?? []) as Product[]}
-      />
+      {!isViewer && (
+        <StockEntryForm
+          warehouses={(warehouses ?? []) as Warehouse[]}
+          products={(products ?? []) as Product[]}
+          fixedWarehouseId={fixedWarehouseId}
+          fixedWarehouseName={fixedWarehouseName}
+        />
+      )}
 
       <section>
         <h2 className="mb-3 text-sm font-semibold text-gray-700">
@@ -90,7 +122,9 @@ export default async function StokGirisiPage() {
                   </td>
                   <td className="px-4 py-2">{e.note ?? "-"}</td>
                   <td className="px-4 py-2 text-right">
-                    <DeleteEntryButton id={e.id} />
+                    {(isAdmin || (!isViewer && e.created_by === user.id)) && (
+                      <DeleteEntryButton id={e.id} />
+                    )}
                   </td>
                 </tr>
               ))}

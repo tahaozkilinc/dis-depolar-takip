@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatTL } from "@/lib/format";
-import type { Warehouse } from "@/lib/types";
+import type { Profile, Warehouse } from "@/lib/types";
 import StorageRateForm from "./StorageRateForm";
 import DeleteRateButton from "./DeleteRateButton";
 
@@ -15,8 +15,12 @@ interface RateRow {
 
 export default async function DepolamaUcretleriPage() {
   const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  const [{ data: warehouses }, { data: rates }] = await Promise.all([
+  const [{ data: profile }, { data: warehouses }, { data: rates }] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", session!.user.id).maybeSingle<Profile>(),
     supabase.from("warehouses").select("*").order("name"),
     supabase
       .from("storage_rates")
@@ -25,6 +29,7 @@ export default async function DepolamaUcretleriPage() {
       .order("valid_from", { ascending: false }),
   ]);
 
+  const isViewer = profile?.role === "viewer";
   const rows = (rates ?? []) as unknown as RateRow[];
 
   return (
@@ -33,7 +38,7 @@ export default async function DepolamaUcretleriPage() {
         Depolama Ücretleri
       </h1>
 
-      <StorageRateForm warehouses={(warehouses ?? []) as Warehouse[]} />
+      {!isViewer && <StorageRateForm warehouses={(warehouses ?? []) as Warehouse[]} />}
 
       <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
         <table className="w-full text-sm">
@@ -43,13 +48,13 @@ export default async function DepolamaUcretleriPage() {
               <th className="px-4 py-2 text-right">Ton/Gün Ücreti</th>
               <th className="px-4 py-2">Geçerlilik</th>
               <th className="px-4 py-2">Not</th>
-              <th className="px-4 py-2"></th>
+              {!isViewer && <th className="px-4 py-2"></th>}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-4 text-center text-gray-500">
+                <td colSpan={isViewer ? 4 : 5} className="px-4 py-4 text-center text-gray-500">
                   Kayıt bulunamadı.
                 </td>
               </tr>
@@ -65,9 +70,11 @@ export default async function DepolamaUcretleriPage() {
                   {r.valid_to ? formatDate(r.valid_to) : "Süresiz"}
                 </td>
                 <td className="px-4 py-2">{r.note ?? "-"}</td>
-                <td className="px-4 py-2 text-right">
-                  <DeleteRateButton id={r.id} />
-                </td>
+                {!isViewer && (
+                  <td className="px-4 py-2 text-right">
+                    <DeleteRateButton id={r.id} />
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
