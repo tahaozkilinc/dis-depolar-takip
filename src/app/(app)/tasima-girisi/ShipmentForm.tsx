@@ -161,6 +161,7 @@ export default function ShipmentForm({
             <FormattedNumberInput
               name="tonnage"
               decimals={4}
+              maxDigits={7}
               required
               value={tonnage}
               onValueChange={setTonnage}

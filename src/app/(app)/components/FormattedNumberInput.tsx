@@ -6,7 +6,7 @@ interface FormattedNumberInputProps {
   name: string;
   /** Number of decimal digits allowed after the comma. */
   decimals?: number;
-  /** Maximum number of digits allowed in total (integer + decimal). */
+  /** Maximum number of digits allowed in the integer part. */
   maxDigits?: number;
   defaultValue?: number | string | null;
   value?: string;
@@ -117,7 +117,7 @@ export default function FormattedNumberInput({
     parseValue(defaultValue)
   );
 
-  const maxIntDigits = maxDigits ? Math.max(maxDigits - decimals, 0) : Infinity;
+  const maxIntDigits = maxDigits ?? Infinity;
   const parsed = isControlled ? parseValue(value) : internal;
   const display = toDisplay(parsed);
   const raw = toRaw(parsed);
