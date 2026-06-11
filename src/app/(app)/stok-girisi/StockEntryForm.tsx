@@ -22,7 +22,14 @@ export default function StockEntryForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [warehouseText, setWarehouseText] = useState("");
+  const [warehouseOpen, setWarehouseOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const warehouseSuggestions = warehouses.filter((w) =>
+    w.name
+      .toLocaleUpperCase("tr-TR")
+      .includes(warehouseText.trim().toLocaleUpperCase("tr-TR"))
+  );
 
   const today = new Date().toISOString().slice(0, 10);
   const defaultProductId =
@@ -77,22 +84,41 @@ export default function StockEntryForm({
                 className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-600"
               />
             ) : (
-              <>
+              <div className="relative">
                 <input
                   type="text"
-                  list="stock-warehouse-options"
                   value={warehouseText}
-                  onChange={(e) => setWarehouseText(e.target.value)}
+                  onChange={(e) => {
+                    setWarehouseText(e.target.value);
+                    setWarehouseOpen(true);
+                  }}
+                  onFocus={() => setWarehouseOpen(true)}
+                  onBlur={() => setTimeout(() => setWarehouseOpen(false), 150)}
                   required
+                  autoComplete="off"
                   placeholder="Depo adı yazın"
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 />
-                <datalist id="stock-warehouse-options">
-                  {warehouses.map((w) => (
-                    <option key={w.id} value={w.name} />
-                  ))}
-                </datalist>
-              </>
+                {warehouseOpen && warehouseSuggestions.length > 0 && (
+                  <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                    {warehouseSuggestions.map((w) => (
+                      <li key={w.id}>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setWarehouseText(w.name);
+                            setWarehouseOpen(false);
+                          }}
+                          className="block w-full px-3 py-2 text-left text-sm hover:bg-brand-50"
+                        >
+                          {w.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
           </div>
           <div>
