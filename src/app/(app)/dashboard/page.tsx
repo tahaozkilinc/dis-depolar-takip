@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatTon } from "@/lib/format";
 import PieChart, { PIE_COLORS } from "@/components/PieChart";
 import StackedBarChart from "@/components/StackedBarChart";
+import DailyReportButton from "./DailyReportButton";
 import type {
   Profile,
   StockBalance,
@@ -66,7 +67,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+        {(profile?.role === "admin" || profile?.role === "viewer") && (
+          <DailyReportButton />
+        )}
+      </div>
 
       {isDepo && (
         <div>
