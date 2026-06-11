@@ -170,6 +170,17 @@ export interface StorageCostPeriodRow {
   storage_cost: number;
 }
 
+export interface StorageCostPeriodByOwnerRow {
+  day: string;
+  product_id: string;
+  product_name: string;
+  owner_id: string | null;
+  owner_name: string;
+  remaining_tonnage: number;
+  rate_per_ton: number;
+  storage_cost: number;
+}
+
 export interface WarehouseTotal {
   warehouse_id: string;
   warehouse_name: string;

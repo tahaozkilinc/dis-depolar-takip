@@ -2,7 +2,13 @@
 
 import { useState, useTransition, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import type { Carrier, Destination, StockBalance, Warehouse } from "@/lib/types";
+import type {
+  Carrier,
+  Destination,
+  StockBalance,
+  StockOwnerBalance,
+  Warehouse,
+} from "@/lib/types";
 import { addShipment } from "./actions";
 import { formatTon } from "@/lib/format";
 import FormattedNumberInput from "../components/FormattedNumberInput";
@@ -20,6 +26,7 @@ export default function ShipmentForm({
   destinations,
   carriers,
   balances,
+  ownerBalances,
   fixedWarehouseId,
   fixedWarehouseName,
   lockDateTime,
@@ -28,6 +35,7 @@ export default function ShipmentForm({
   destinations: Destination[];
   carriers: Carrier[];
   balances: StockBalance[];
+  ownerBalances: StockOwnerBalance[];
   fixedWarehouseId: string | null;
   fixedWarehouseName: string | null;
   lockDateTime?: boolean;
@@ -61,6 +69,15 @@ export default function ShipmentForm({
   const selectedBalance = productOptions.find(
     (p) => p.product_id === effectiveSelectedProduct
   );
+
+  const ownerBreakdown = useMemo(() => {
+    return ownerBalances.filter(
+      (o) =>
+        o.warehouse_id === selectedWarehouse &&
+        o.product_id === effectiveSelectedProduct &&
+        o.remaining_tonnage > 0
+    );
+  }, [ownerBalances, selectedWarehouse, effectiveSelectedProduct]);
 
   const overLimit =
     selectedBalance &&
@@ -150,6 +167,14 @@ export default function ShipmentForm({
               <p className="mt-1 text-xs text-amber-600">
                 Bu depoda kalan stoğu olan ürün bulunamadı.
               </p>
+            )}
+            {ownerBreakdown.length > 0 && (
+              <div className="mt-1 rounded-md bg-gray-50 px-2 py-1 text-xs text-gray-600">
+                <span className="font-medium">Sahiplik: </span>
+                {ownerBreakdown
+                  .map((o) => `${o.owner_name}: ${formatTon(o.remaining_tonnage)} ton`)
+                  .join(", ")}
+              </div>
             )}
           </div>
           <div>

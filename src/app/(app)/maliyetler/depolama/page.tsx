@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatTL, formatTon } from "@/lib/format";
 import type {
   DailyStorageCostToday,
+  StorageCostPeriodByOwnerRow,
   StorageCostPeriodRow,
   Warehouse,
 } from "@/lib/types";
@@ -57,18 +58,42 @@ export default async function DepolamaMaliyetPage({
   const to = (params.to as string) || today();
 
   let storageRows: StorageCostPeriodRow[] = [];
+  let storageByOwnerRows: StorageCostPeriodByOwnerRow[] = [];
 
   if (warehouseId) {
-    const { data: storageCost } = await supabase.rpc("storage_cost_period", {
-      p_warehouse_id: warehouseId,
-      p_start: from,
-      p_end: to,
-    });
+    const [{ data: storageCost }, { data: storageCostByOwner }] = await Promise.all([
+      supabase.rpc("storage_cost_period", {
+        p_warehouse_id: warehouseId,
+        p_start: from,
+        p_end: to,
+      }),
+      supabase.rpc("storage_cost_period_by_owner", {
+        p_warehouse_id: warehouseId,
+        p_start: from,
+        p_end: to,
+      }),
+    ]);
     storageRows = (storageCost ?? []) as StorageCostPeriodRow[];
+    storageByOwnerRows = (storageCostByOwner ?? []) as StorageCostPeriodByOwnerRow[];
   }
 
   const storageTotal = storageRows.reduce(
     (sum, r) => sum + Number(r.storage_cost),
+    0
+  );
+
+  const storageByOwner = new Map<string, { owner_name: string; total_cost: number }>();
+  for (const r of storageByOwnerRows) {
+    const key = r.owner_id ?? "null";
+    const existing = storageByOwner.get(key) ?? {
+      owner_name: r.owner_name,
+      total_cost: 0,
+    };
+    existing.total_cost += Number(r.storage_cost);
+    storageByOwner.set(key, existing);
+  }
+  const storageByOwnerTotal = Array.from(storageByOwner.values()).reduce(
+    (sum, o) => sum + o.total_cost,
     0
   );
 
@@ -173,6 +198,48 @@ export default async function DepolamaMaliyetPage({
                   </td>
                   <td className="px-4 py-2 text-right">
                     {formatTL(storageTotal)}
+                  </td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </section>
+
+      {/* Storage costs by owner */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold text-gray-700">
+          Şirket Bazlı Depolama Maliyeti (KDV Hariç)
+        </h2>
+        <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+              <tr>
+                <th className="px-4 py-2">Sahip</th>
+                <th className="px-4 py-2 text-right">Kesilecek Depolama Maliyeti</th>
+              </tr>
+            </thead>
+            <tbody>
+              {storageByOwner.size === 0 && (
+                <tr>
+                  <td colSpan={2} className="px-4 py-4 text-center text-gray-500">
+                    Kayıt bulunamadı.
+                  </td>
+                </tr>
+              )}
+              {Array.from(storageByOwner.entries()).map(([key, o]) => (
+                <tr key={key} className="border-t">
+                  <td className="px-4 py-2">{o.owner_name}</td>
+                  <td className="px-4 py-2 text-right">{formatTL(o.total_cost)}</td>
+                </tr>
+              ))}
+            </tbody>
+            {storageByOwner.size > 0 && (
+              <tfoot>
+                <tr className="border-t bg-gray-50 font-semibold">
+                  <td className="px-4 py-2">Toplam (KDV Hariç)</td>
+                  <td className="px-4 py-2 text-right">
+                    {formatTL(storageByOwnerTotal)}
                   </td>
                 </tr>
               </tfoot>

@@ -5,6 +5,7 @@ import type {
   Destination,
   Profile,
   StockBalance,
+  StockOwnerBalance,
   Warehouse,
 } from "@/lib/types";
 import ShipmentForm from "./ShipmentForm";
@@ -36,6 +37,7 @@ export default async function TasimaGirisiPage() {
     { data: destinations },
     { data: carriers },
     { data: balances },
+    { data: ownerBalances },
     { data: myWarehouses },
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>(),
@@ -43,6 +45,7 @@ export default async function TasimaGirisiPage() {
     supabase.from("destinations").select("*").order("name"),
     supabase.from("carriers").select("*").eq("active", true).order("name"),
     supabase.from("stock_balances").select("*"),
+    supabase.from("stock_owner_balances").select("*"),
     supabase.from("profile_warehouses").select("warehouse_id").eq("profile_id", user.id),
   ]);
 
@@ -120,6 +123,7 @@ export default async function TasimaGirisiPage() {
           destinations={(destinations ?? []) as Destination[]}
           carriers={(carriers ?? []) as Carrier[]}
           balances={(balances ?? []) as StockBalance[]}
+          ownerBalances={(ownerBalances ?? []) as StockOwnerBalance[]}
           fixedWarehouseId={fixedWarehouseId}
           fixedWarehouseName={fixedWarehouseName}
           lockDateTime={profile.role === "operasyon_takip"}
