@@ -132,7 +132,7 @@ export default function StockEntryForm({
             <FormattedNumberInput
               name="tonnage"
               decimals={4}
-              maxDigits={7}
+              maxDigits={20}
               required
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
