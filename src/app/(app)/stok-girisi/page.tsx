@@ -1,6 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatTon } from "@/lib/format";
-import type { Product, Profile, Warehouse, StockBalance } from "@/lib/types";
+import type {
+  Product,
+  ProductOwner,
+  Profile,
+  Warehouse,
+  StockBalance,
+  StockOwnerBalance,
+} from "@/lib/types";
 import StockEntryForm from "./StockEntryForm";
 import DeleteEntryButton from "./DeleteEntryButton";
 
@@ -14,6 +21,7 @@ interface StockEntryRow {
   created_by: string | null;
   warehouses: { name: string } | null;
   products: { name: string } | null;
+  product_owners: { name: string } | null;
 }
 
 export default async function StokGirisiPage() {
@@ -27,6 +35,7 @@ export default async function StokGirisiPage() {
     { data: profile },
     { data: warehouses },
     { data: products },
+    { data: owners },
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -39,6 +48,7 @@ export default async function StokGirisiPage() {
       .eq("active", true)
       .order("name"),
     supabase.from("products").select("*").order("name"),
+    supabase.from("product_owners").select("*").eq("active", true).order("name"),
   ]);
 
   const isAdmin = profile?.role === "admin";
@@ -53,7 +63,7 @@ export default async function StokGirisiPage() {
   let entriesQuery = supabase
     .from("stock_entries")
     .select(
-      "id, warehouse_id, product_id, tonnage, entry_date, note, created_by, warehouses(name), products(name)"
+      "id, warehouse_id, product_id, tonnage, entry_date, note, created_by, warehouses(name), products(name), product_owners(name)"
     )
     .order("created_at", { ascending: false })
     .limit(50);
@@ -64,15 +74,21 @@ export default async function StokGirisiPage() {
     .order("warehouse_name")
     .order("product_name");
 
+  let ownerBalancesQuery = supabase
+    .from("stock_owner_balances")
+    .select("*")
+    .order("warehouse_name")
+    .order("product_name")
+    .order("owner_name");
+
   if (fixedWarehouseId) {
     entriesQuery = entriesQuery.eq("warehouse_id", fixedWarehouseId);
     balancesQuery = balancesQuery.eq("warehouse_id", fixedWarehouseId);
+    ownerBalancesQuery = ownerBalancesQuery.eq("warehouse_id", fixedWarehouseId);
   }
 
-  const [{ data: entries }, { data: balances }] = await Promise.all([
-    entriesQuery,
-    balancesQuery,
-  ]);
+  const [{ data: entries }, { data: balances }, { data: ownerBalancesData }] =
+    await Promise.all([entriesQuery, balancesQuery, ownerBalancesQuery]);
 
   const stockEntries = (entries ?? []) as unknown as StockEntryRow[];
 
@@ -90,6 +106,7 @@ export default async function StokGirisiPage() {
     (creatorNames ?? []).map((p) => [p.id as string, p.full_name as string])
   );
   const stockBalances = (balances ?? []) as StockBalance[];
+  const ownerBalances = (ownerBalancesData ?? []) as StockOwnerBalance[];
 
   return (
     <div className="flex flex-col gap-6">
@@ -99,6 +116,7 @@ export default async function StokGirisiPage() {
         <StockEntryForm
           warehouses={(warehouses ?? []) as Warehouse[]}
           products={(products ?? []) as Product[]}
+          owners={(owners ?? []) as ProductOwner[]}
           fixedWarehouseId={fixedWarehouseId}
           fixedWarehouseName={fixedWarehouseName}
         />
@@ -116,6 +134,7 @@ export default async function StokGirisiPage() {
                 <th className="px-4 py-2">Depo</th>
                 <th className="px-4 py-2">Ürün</th>
                 <th className="px-4 py-2 text-right">Tonaj</th>
+                <th className="px-4 py-2">Sahip</th>
                 <th className="px-4 py-2">Not</th>
                 <th className="px-4 py-2">Giriş Yapan</th>
                 <th className="px-4 py-2"></th>
@@ -124,7 +143,7 @@ export default async function StokGirisiPage() {
             <tbody>
               {stockEntries.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-4 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-4 text-center text-gray-500">
                     Kayıt bulunamadı.
                   </td>
                 </tr>
@@ -137,6 +156,7 @@ export default async function StokGirisiPage() {
                   <td className="px-4 py-2 text-right">
                     {formatTon(e.tonnage)}
                   </td>
+                  <td className="px-4 py-2">{e.product_owners?.name ?? "-"}</td>
                   <td className="px-4 py-2">{e.note ?? "-"}</td>
                   <td className="px-4 py-2">
                     {e.created_by ? nameById.get(e.created_by) ?? "-" : "-"}
@@ -185,6 +205,50 @@ export default async function StokGirisiPage() {
                   </td>
                   <td className="px-4 py-2 text-right">
                     {formatTon(b.total_out)}
+                  </td>
+                  <td className="px-4 py-2 text-right font-medium">
+                    {formatTon(b.remaining_tonnage)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-sm font-semibold text-gray-700">
+          Sahiplik Bazlı Stok Kırılımı
+        </h2>
+        <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+              <tr>
+                <th className="px-4 py-2">Depo</th>
+                <th className="px-4 py-2">Ürün</th>
+                <th className="px-4 py-2">Sahip</th>
+                <th className="px-4 py-2 text-right">Toplam Giriş</th>
+                <th className="px-4 py-2 text-right">Güncel Stok</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ownerBalances.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-4 text-center text-gray-500">
+                    Kayıt bulunamadı.
+                  </td>
+                </tr>
+              )}
+              {ownerBalances.map((b) => (
+                <tr
+                  key={`${b.warehouse_id}-${b.product_id}-${b.owner_id ?? "null"}`}
+                  className="border-t"
+                >
+                  <td className="px-4 py-2">{b.warehouse_name}</td>
+                  <td className="px-4 py-2">{b.product_name}</td>
+                  <td className="px-4 py-2">{b.owner_name}</td>
+                  <td className="px-4 py-2 text-right">
+                    {formatTon(b.total_in)}
                   </td>
                   <td className="px-4 py-2 text-right font-medium">
                     {formatTon(b.remaining_tonnage)}

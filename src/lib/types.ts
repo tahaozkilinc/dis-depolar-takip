@@ -64,8 +64,27 @@ export interface StockEntry {
   tonnage: number;
   entry_date: string;
   note: string | null;
+  owner_id: string | null;
   created_by: string | null;
   created_at: string;
+}
+
+export interface ProductOwner {
+  id: string;
+  name: string;
+  active: boolean;
+  created_at: string;
+}
+
+export interface StockOwnerBalance {
+  warehouse_id: string;
+  warehouse_name: string;
+  product_id: string;
+  product_name: string;
+  owner_id: string | null;
+  owner_name: string;
+  total_in: number;
+  remaining_tonnage: number;
 }
 
 export interface Shipment {

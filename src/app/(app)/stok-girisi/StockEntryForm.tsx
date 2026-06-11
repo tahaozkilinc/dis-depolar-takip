@@ -2,18 +2,20 @@
 
 import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
-import type { Product, Warehouse } from "@/lib/types";
-import { addStockEntry } from "./actions";
+import type { Product, ProductOwner, Warehouse } from "@/lib/types";
+import { addStockEntry, addOwnerQuick } from "./actions";
 import FormattedNumberInput from "../components/FormattedNumberInput";
 
 export default function StockEntryForm({
   warehouses,
   products,
+  owners,
   fixedWarehouseId,
   fixedWarehouseName,
 }: {
   warehouses: Warehouse[];
   products: Product[];
+  owners: ProductOwner[];
   fixedWarehouseId?: string | null;
   fixedWarehouseName?: string | null;
 }) {
@@ -23,6 +25,8 @@ export default function StockEntryForm({
   const [success, setSuccess] = useState<string | null>(null);
   const [warehouseText, setWarehouseText] = useState("");
   const [warehouseOpen, setWarehouseOpen] = useState(false);
+  const [newOwnerName, setNewOwnerName] = useState("");
+  const [ownerPending, startOwnerTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
 
   const warehouseSuggestions = warehouses.filter((w) =>
@@ -35,6 +39,21 @@ export default function StockEntryForm({
   const defaultProductId =
     products.find((p) => p.name.toLocaleUpperCase("tr-TR") === "MISIR")?.id ??
     "";
+  const defaultOwnerId =
+    owners.find((o) => o.name === "BİZE AİT")?.id ?? "";
+
+  function handleAddOwner() {
+    setError(null);
+    startOwnerTransition(async () => {
+      const res = await addOwnerQuick(newOwnerName);
+      if (res?.error) {
+        setError(res.error);
+      } else {
+        setNewOwnerName("");
+        router.refresh();
+      }
+    });
+  }
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -162,6 +181,41 @@ export default function StockEntryForm({
               required
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Ürün Sahibi (Tahsis)
+            </label>
+            <select
+              name="owner_id"
+              required
+              defaultValue={defaultOwnerId}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            >
+              <option value="">Seçiniz</option>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                </option>
+              ))}
+            </select>
+            <div className="mt-2 flex gap-2">
+              <input
+                type="text"
+                value={newOwnerName}
+                onChange={(e) => setNewOwnerName(e.target.value)}
+                placeholder="Yeni şirket adı ekle"
+                className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-xs uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+              <button
+                type="button"
+                onClick={handleAddOwner}
+                disabled={ownerPending || !newOwnerName.trim()}
+                className="whitespace-nowrap rounded-md border border-brand-600 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50 disabled:opacity-50"
+              >
+                {ownerPending ? "Ekleniyor..." : "Ekle"}
+              </button>
+            </div>
           </div>
           <div className="sm:col-span-2">
             <label className="mb-1 block text-sm font-medium text-gray-700">
