@@ -52,7 +52,6 @@ export interface Profile {
   full_name: string | null;
   email: string | null;
   role: UserRole;
-  warehouse_id: string | null;
   active: boolean;
   created_at: string;
 }

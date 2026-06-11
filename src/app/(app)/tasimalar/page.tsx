@@ -34,6 +34,7 @@ export default async function TasimalarPage({
     { data: warehouses },
     { data: products },
     { data: destinations },
+    { data: myWarehouses },
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -43,10 +44,17 @@ export default async function TasimalarPage({
     supabase.from("warehouses").select("*").order("name"),
     supabase.from("products").select("*").order("name"),
     supabase.from("destinations").select("*").order("name"),
+    supabase.from("profile_warehouses").select("warehouse_id").eq("profile_id", session!.user.id),
   ]);
 
   const isAdmin = profile?.role === "admin";
   const isViewer = profile?.role === "viewer";
+  const myWarehouseIds = (myWarehouses ?? []).map((w) => w.warehouse_id);
+  const allWarehouses = (warehouses ?? []) as Warehouse[];
+  const formWarehouses =
+    isAdmin || isViewer
+      ? allWarehouses
+      : allWarehouses.filter((w) => myWarehouseIds.includes(w.id));
 
   const warehouseId = (params.warehouse_id as string) || "";
   const productId = (params.product_id as string) || "";
@@ -62,8 +70,12 @@ export default async function TasimalarPage({
     .order("shipment_date", { ascending: false })
     .order("created_at", { ascending: false });
 
-  if (!isAdmin && !isViewer && profile?.warehouse_id) {
-    query = query.eq("warehouse_id", profile.warehouse_id);
+  if (!isAdmin && !isViewer) {
+    if (warehouseId && myWarehouseIds.includes(warehouseId)) {
+      query = query.eq("warehouse_id", warehouseId);
+    } else if (myWarehouseIds.length > 0) {
+      query = query.in("warehouse_id", myWarehouseIds);
+    }
   } else if ((isAdmin || isViewer) && warehouseId) {
     query = query.eq("warehouse_id", warehouseId);
   }
@@ -101,10 +113,10 @@ export default async function TasimalarPage({
       </div>
 
       <FilterBar
-        warehouses={(warehouses ?? []) as Warehouse[]}
+        warehouses={isAdmin || isViewer ? allWarehouses : formWarehouses}
         products={(products ?? []) as Product[]}
         destinations={(destinations ?? []) as Destination[]}
-        showWarehouse={isAdmin || isViewer}
+        showWarehouse={isAdmin || isViewer || formWarehouses.length > 1}
         defaults={{
           warehouse_id: warehouseId,
           product_id: productId,

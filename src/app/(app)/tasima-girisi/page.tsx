@@ -36,12 +36,14 @@ export default async function TasimaGirisiPage() {
     { data: destinations },
     { data: carriers },
     { data: balances },
+    { data: myWarehouses },
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>(),
     supabase.from("warehouses").select("*").eq("active", true).order("name"),
     supabase.from("destinations").select("*").order("name"),
     supabase.from("carriers").select("*").eq("active", true).order("name"),
     supabase.from("stock_balances").select("*"),
+    supabase.from("profile_warehouses").select("warehouse_id").eq("profile_id", user.id),
   ]);
 
   if (!profile) {
@@ -54,8 +56,9 @@ export default async function TasimaGirisiPage() {
 
   const isAdmin = profile.role === "admin";
   const isViewer = profile.role === "viewer";
+  const myWarehouseIds = (myWarehouses ?? []).map((w) => w.warehouse_id);
 
-  if (!isAdmin && !isViewer && !profile.warehouse_id) {
+  if (!isAdmin && !isViewer && myWarehouseIds.length === 0) {
     return (
       <div className="rounded-lg border bg-white p-6 text-center shadow-sm">
         <p className="text-sm text-gray-600">
@@ -66,9 +69,15 @@ export default async function TasimaGirisiPage() {
     );
   }
 
-  const fixedWarehouseId = isAdmin || isViewer ? null : profile.warehouse_id;
+  const allWarehouses = (warehouses ?? []) as Warehouse[];
+  const formWarehouses =
+    isAdmin || isViewer
+      ? allWarehouses
+      : allWarehouses.filter((w) => myWarehouseIds.includes(w.id));
+  const fixedWarehouseId =
+    isAdmin || isViewer || formWarehouses.length !== 1 ? null : formWarehouses[0].id;
   const fixedWarehouseName = fixedWarehouseId
-    ? (warehouses ?? []).find((w) => w.id === fixedWarehouseId)?.name ?? null
+    ? formWarehouses.find((w) => w.id === fixedWarehouseId)?.name ?? null
     : null;
 
   // For recent shipments table
@@ -80,8 +89,8 @@ export default async function TasimaGirisiPage() {
     .order("created_at", { ascending: false })
     .limit(20);
 
-  if (fixedWarehouseId) {
-    shipmentsQuery = shipmentsQuery.eq("warehouse_id", fixedWarehouseId);
+  if (!isAdmin && !isViewer && myWarehouseIds.length > 0) {
+    shipmentsQuery = shipmentsQuery.in("warehouse_id", myWarehouseIds);
   }
 
   const { data: shipments } = await shipmentsQuery;
@@ -107,7 +116,7 @@ export default async function TasimaGirisiPage() {
 
       {!isViewer && (
         <ShipmentForm
-          warehouses={(warehouses ?? []) as Warehouse[]}
+          warehouses={formWarehouses}
           destinations={(destinations ?? []) as Destination[]}
           carriers={(carriers ?? []) as Carrier[]}
           balances={(balances ?? []) as StockBalance[]}

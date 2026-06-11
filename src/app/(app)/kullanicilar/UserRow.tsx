@@ -8,25 +8,39 @@ import { updateProfile } from "./actions";
 export default function UserRow({
   profile,
   warehouses,
+  assignedWarehouseIds,
   isSelf,
 }: {
   profile: Profile;
   warehouses: Warehouse[];
+  assignedWarehouseIds: string[];
   isSelf: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [role, setRole] = useState<UserRole>(profile.role);
-  const [warehouseId, setWarehouseId] = useState(profile.warehouse_id ?? "");
+  const [warehouseIds, setWarehouseIds] = useState<string[]>(assignedWarehouseIds);
   const [active, setActive] = useState(profile.active);
   const [error, setError] = useState<string | null>(null);
+
+  function toggleWarehouse(id: string) {
+    setWarehouseIds((prev) =>
+      prev.includes(id) ? prev.filter((w) => w !== id) : [...prev, id]
+    );
+  }
+
+  function toggleAll() {
+    setWarehouseIds((prev) =>
+      prev.length === warehouses.length ? [] : warehouses.map((w) => w.id)
+    );
+  }
 
   function handleSave() {
     setError(null);
     startTransition(async () => {
       const res = await updateProfile(profile.id, {
         role,
-        warehouse_id: warehouseId || null,
+        warehouse_ids: warehouseIds,
         active,
       });
       if (res?.error) setError(res.error);
@@ -57,18 +71,30 @@ export default function UserRow({
       </td>
       <td className="px-4 py-2">
         {role === "depo" || role === "operasyon_takip" ? (
-          <select
-            value={warehouseId}
-            onChange={(e) => setWarehouseId(e.target.value)}
-            className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          >
-            <option value="">Seçiniz</option>
+          <div className="flex max-h-32 w-48 flex-col gap-1 overflow-y-auto rounded-md border border-gray-300 p-2">
+            <label className="flex items-center gap-1.5 border-b pb-1 text-xs font-medium text-gray-700">
+              <input
+                type="checkbox"
+                checked={
+                  warehouses.length > 0 && warehouseIds.length === warehouses.length
+                }
+                onChange={toggleAll}
+                className="h-3.5 w-3.5"
+              />
+              Hepsi
+            </label>
             {warehouses.map((w) => (
-              <option key={w.id} value={w.id}>
+              <label key={w.id} className="flex items-center gap-1.5 text-xs text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={warehouseIds.includes(w.id)}
+                  onChange={() => toggleWarehouse(w.id)}
+                  className="h-3.5 w-3.5"
+                />
                 {w.name}
-              </option>
+              </label>
             ))}
-          </select>
+          </div>
         ) : (
           <span className="text-gray-400">-</span>
         )}

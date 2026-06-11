@@ -8,14 +8,23 @@ export default async function KullanicilarPage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const [{ data: profiles }, { data: warehouses }] = await Promise.all([
-    supabase.from("profiles").select("*").order("created_at"),
-    supabase.from("warehouses").select("*").order("name"),
-  ]);
+  const [{ data: profiles }, { data: warehouses }, { data: profileWarehouses }] =
+    await Promise.all([
+      supabase.from("profiles").select("*").order("created_at"),
+      supabase.from("warehouses").select("*").order("name"),
+      supabase.from("profile_warehouses").select("profile_id, warehouse_id"),
+    ]);
 
   const list = (profiles ?? []) as Profile[];
   const warehouseList = (warehouses ?? []) as Warehouse[];
   const warehouseMap = new Map(warehouseList.map((w) => [w.id, w.name]));
+
+  const assignedWarehouseIdsByProfile = new Map<string, string[]>();
+  for (const pw of profileWarehouses ?? []) {
+    const ids = assignedWarehouseIdsByProfile.get(pw.profile_id) ?? [];
+    ids.push(pw.warehouse_id);
+    assignedWarehouseIdsByProfile.set(pw.profile_id, ids);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,6 +60,7 @@ export default async function KullanicilarPage() {
                 key={p.id}
                 profile={p}
                 warehouses={warehouseList}
+                assignedWarehouseIds={assignedWarehouseIdsByProfile.get(p.id) ?? []}
                 isSelf={p.id === session?.user.id}
               />
             ))}

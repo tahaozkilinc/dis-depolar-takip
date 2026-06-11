@@ -36,6 +36,7 @@ export default async function StokGirisiPage() {
     { data: warehouses },
     { data: products },
     { data: owners },
+    { data: myWarehouses },
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -49,15 +50,24 @@ export default async function StokGirisiPage() {
       .order("name"),
     supabase.from("products").select("*").order("name"),
     supabase.from("product_owners").select("*").eq("active", true).order("name"),
+    supabase.from("profile_warehouses").select("warehouse_id").eq("profile_id", user.id),
   ]);
 
   const isAdmin = profile?.role === "admin";
   const isViewer = profile?.role === "viewer";
   const isOperasyon = profile?.role === "operasyon";
+  const myWarehouseIds = (myWarehouses ?? []).map((w) => w.warehouse_id);
+  const allWarehouses = (warehouses ?? []) as Warehouse[];
+  const formWarehouses =
+    isAdmin || isViewer || isOperasyon
+      ? allWarehouses
+      : allWarehouses.filter((w) => myWarehouseIds.includes(w.id));
   const fixedWarehouseId =
-    isAdmin || isViewer || isOperasyon ? null : profile?.warehouse_id ?? null;
+    isAdmin || isViewer || isOperasyon || formWarehouses.length !== 1
+      ? null
+      : formWarehouses[0].id;
   const fixedWarehouseName = fixedWarehouseId
-    ? (warehouses ?? []).find((w) => w.id === fixedWarehouseId)?.name ?? null
+    ? formWarehouses.find((w) => w.id === fixedWarehouseId)?.name ?? null
     : null;
 
   let entriesQuery = supabase
@@ -81,10 +91,10 @@ export default async function StokGirisiPage() {
     .order("product_name")
     .order("owner_name");
 
-  if (fixedWarehouseId) {
-    entriesQuery = entriesQuery.eq("warehouse_id", fixedWarehouseId);
-    balancesQuery = balancesQuery.eq("warehouse_id", fixedWarehouseId);
-    ownerBalancesQuery = ownerBalancesQuery.eq("warehouse_id", fixedWarehouseId);
+  if (!isAdmin && !isViewer && !isOperasyon && myWarehouseIds.length > 0) {
+    entriesQuery = entriesQuery.in("warehouse_id", myWarehouseIds);
+    balancesQuery = balancesQuery.in("warehouse_id", myWarehouseIds);
+    ownerBalancesQuery = ownerBalancesQuery.in("warehouse_id", myWarehouseIds);
   }
 
   const [{ data: entries }, { data: balances }, { data: ownerBalancesData }] =
@@ -114,7 +124,7 @@ export default async function StokGirisiPage() {
 
       {!isViewer && (
         <StockEntryForm
-          warehouses={(warehouses ?? []) as Warehouse[]}
+          warehouses={formWarehouses}
           products={(products ?? []) as Product[]}
           owners={(owners ?? []) as ProductOwner[]}
           fixedWarehouseId={fixedWarehouseId}

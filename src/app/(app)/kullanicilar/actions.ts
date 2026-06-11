@@ -6,7 +6,7 @@ import type { UserRole } from "@/lib/types";
 
 export async function updateProfile(
   id: string,
-  data: { role: UserRole; warehouse_id: string | null; active: boolean }
+  data: { role: UserRole; warehouse_ids: string[]; active: boolean }
 ) {
   const supabase = await createClient();
   const {
@@ -25,25 +25,32 @@ export async function updateProfile(
     }
   }
 
-  const payload: {
-    role: UserRole;
-    warehouse_id: string | null;
-    active: boolean;
-  } = {
-    role: data.role,
-    warehouse_id:
-      data.role === "depo" || data.role === "operasyon_takip"
-        ? data.warehouse_id
-        : null,
-    active: data.active,
-  };
-
   const { error } = await supabase
     .from("profiles")
-    .update(payload)
+    .update({ role: data.role, active: data.active })
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  const { error: delError } = await supabase
+    .from("profile_warehouses")
+    .delete()
+    .eq("profile_id", id);
+
+  if (delError) return { error: delError.message };
+
+  const warehouseIds =
+    data.role === "depo" || data.role === "operasyon_takip"
+      ? data.warehouse_ids
+      : [];
+
+  if (warehouseIds.length > 0) {
+    const { error: insError } = await supabase
+      .from("profile_warehouses")
+      .insert(warehouseIds.map((warehouse_id) => ({ profile_id: id, warehouse_id })));
+    if (insError) return { error: insError.message };
+  }
+
   revalidatePath("/kullanicilar");
   return { success: true };
 }

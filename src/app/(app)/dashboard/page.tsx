@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const [{ data: profile }, { data: totals }, { data: todaySummary }, { data: balances }] =
+  const [{ data: profile }, { data: totals }, { data: todaySummary }, { data: balances }, { data: myWarehouses }] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -28,17 +28,18 @@ export default async function DashboardPage() {
       supabase.from("warehouse_totals").select("*"),
       supabase.from("today_shipments_summary").select("*"),
       supabase.from("stock_balances").select("*"),
+      supabase.from("profile_warehouses").select("warehouse_id").eq("profile_id", session!.user.id),
     ]);
 
   const isDepo = profile?.role === "depo" || profile?.role === "operasyon_takip";
-  const myWarehouseId = profile?.warehouse_id ?? null;
+  const myWarehouseIds = (myWarehouses ?? []).map((w) => w.warehouse_id);
 
   const filteredTotals: WarehouseTotal[] = (totals ?? []).filter(
-    (w) => !isDepo || w.warehouse_id === myWarehouseId
+    (w) => !isDepo || myWarehouseIds.includes(w.warehouse_id)
   );
 
   const filteredSummary: TodayShipmentsSummary[] = (todaySummary ?? []).filter(
-    (s) => !isDepo || s.warehouse_id === myWarehouseId
+    (s) => !isDepo || myWarehouseIds.includes(s.warehouse_id)
   );
 
   const todayTotalTonnage = filteredSummary.reduce(
@@ -47,7 +48,7 @@ export default async function DashboardPage() {
   );
 
   const filteredBalances: StockBalance[] = (balances ?? []).filter(
-    (b) => !isDepo || b.warehouse_id === myWarehouseId
+    (b) => !isDepo || myWarehouseIds.includes(b.warehouse_id)
   );
 
   const totalRemaining = filteredTotals.reduce(
