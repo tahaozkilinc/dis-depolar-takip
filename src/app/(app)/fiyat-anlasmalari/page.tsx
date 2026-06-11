@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatTL } from "@/lib/format";
-import type { Destination, PricingBasis, Profile, Warehouse } from "@/lib/types";
+import type { Carrier, Destination, PricingBasis, Profile, Warehouse } from "@/lib/types";
 import PricingForm from "./PricingForm";
 import DeleteAgreementButton from "./DeleteAgreementButton";
 
@@ -13,6 +13,7 @@ interface AgreementRow {
   note: string | null;
   warehouses: { name: string } | null;
   destinations: { name: string } | null;
+  carriers: { name: string } | null;
 }
 
 function basisLabel(basis: PricingBasis): string {
@@ -25,15 +26,16 @@ export default async function FiyatAnlasmalariPage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const [{ data: profile }, { data: warehouses }, { data: destinations }, { data: agreements }] =
+  const [{ data: profile }, { data: warehouses }, { data: destinations }, { data: carriers }, { data: agreements }] =
     await Promise.all([
       supabase.from("profiles").select("*").eq("id", session!.user.id).maybeSingle<Profile>(),
       supabase.from("warehouses").select("*").order("name"),
       supabase.from("destinations").select("*").order("name"),
+      supabase.from("carriers").select("*").order("name"),
       supabase
         .from("pricing_agreements")
         .select(
-          "id, basis, unit_price, valid_from, valid_to, note, warehouses(name), destinations(name)"
+          "id, basis, unit_price, valid_from, valid_to, note, warehouses(name), destinations(name), carriers(name)"
         )
         .order("warehouse_id")
         .order("valid_from", { ascending: false }),
@@ -52,6 +54,7 @@ export default async function FiyatAnlasmalariPage() {
         <PricingForm
           warehouses={(warehouses ?? []) as Warehouse[]}
           destinations={(destinations ?? []) as Destination[]}
+          carriers={(carriers ?? []) as Carrier[]}
         />
       )}
 
@@ -61,6 +64,7 @@ export default async function FiyatAnlasmalariPage() {
             <tr>
               <th className="px-4 py-2">Depo</th>
               <th className="px-4 py-2">Varış</th>
+              <th className="px-4 py-2">Nakliyeci</th>
               <th className="px-4 py-2">Fiyat Tipi</th>
               <th className="px-4 py-2 text-right">Birim Fiyat</th>
               <th className="px-4 py-2">Geçerlilik</th>
@@ -71,7 +75,7 @@ export default async function FiyatAnlasmalariPage() {
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={isViewer ? 6 : 7} className="px-4 py-4 text-center text-gray-500">
+                <td colSpan={isViewer ? 7 : 8} className="px-4 py-4 text-center text-gray-500">
                   Kayıt bulunamadı.
                 </td>
               </tr>
@@ -80,6 +84,7 @@ export default async function FiyatAnlasmalariPage() {
               <tr key={r.id} className="border-t">
                 <td className="px-4 py-2">{r.warehouses?.name ?? "-"}</td>
                 <td className="px-4 py-2">{r.destinations?.name ?? "Tümü"}</td>
+                <td className="px-4 py-2">{r.carriers?.name ?? "Tümü"}</td>
                 <td className="px-4 py-2">{basisLabel(r.basis)}</td>
                 <td className="px-4 py-2 text-right">
                   {formatTL(r.unit_price)}

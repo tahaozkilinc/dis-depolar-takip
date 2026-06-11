@@ -13,6 +13,7 @@ export async function addPricingAgreement(formData: FormData) {
 
   const warehouse_id = formData.get("warehouse_id") as string;
   const destination_id = (formData.get("destination_id") as string) || null;
+  const carrier_id = (formData.get("carrier_id") as string) || null;
   const basis = formData.get("basis") as string;
   const unit_price = parseFloat(formData.get("unit_price") as string);
   const valid_from = formData.get("valid_from") as string;
@@ -27,6 +28,7 @@ export async function addPricingAgreement(formData: FormData) {
   const { error } = await supabase.from("pricing_agreements").insert({
     warehouse_id,
     destination_id,
+    carrier_id,
     basis,
     unit_price,
     valid_from,

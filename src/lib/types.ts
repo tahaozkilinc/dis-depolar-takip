@@ -25,6 +25,13 @@ export interface Destination {
   created_at: string;
 }
 
+export interface Carrier {
+  id: string;
+  name: string;
+  active: boolean;
+  created_at: string;
+}
+
 export interface Profile {
   id: string;
   full_name: string | null;
@@ -50,6 +57,7 @@ export interface Shipment {
   warehouse_id: string;
   product_id: string;
   destination_id: string | null;
+  carrier_id: string | null;
   vehicle_plate: string;
   tonnage: number;
   shipment_date: string;
@@ -64,6 +72,7 @@ export interface PricingAgreement {
   id: string;
   warehouse_id: string;
   destination_id: string | null;
+  carrier_id: string | null;
   basis: PricingBasis;
   unit_price: number;
   valid_from: string;
@@ -109,6 +118,7 @@ export interface ShipmentCost {
   warehouse_id: string;
   product_id: string;
   destination_id: string | null;
+  carrier_id: string | null;
   vehicle_plate: string;
   tonnage: number;
   shipment_date: string;

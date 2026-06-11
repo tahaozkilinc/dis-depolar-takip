@@ -2,20 +2,30 @@
 
 import { useState, useTransition, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import type { Destination, StockBalance, Warehouse } from "@/lib/types";
+import type { Carrier, Destination, StockBalance, Warehouse } from "@/lib/types";
 import { addShipment } from "./actions";
 import { formatTon } from "@/lib/format";
 import FormattedNumberInput from "../components/FormattedNumberInput";
+import PlateInput from "../components/PlateInput";
+
+function currentTime(): string {
+  return new Date().toLocaleTimeString("tr-TR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function ShipmentForm({
   warehouses,
   destinations,
+  carriers,
   balances,
   fixedWarehouseId,
   fixedWarehouseName,
 }: {
   warehouses: Warehouse[];
   destinations: Destination[];
+  carriers: Carrier[];
   balances: StockBalance[];
   fixedWarehouseId: string | null;
   fixedWarehouseName: string | null;
@@ -29,6 +39,7 @@ export default function ShipmentForm({
   );
   const [selectedProduct, setSelectedProduct] = useState("");
   const [tonnage, setTonnage] = useState("");
+  const [shipmentTime, setShipmentTime] = useState(currentTime);
   const formRef = useRef<HTMLFormElement>(null);
 
   const today = new Date().toISOString().slice(0, 10);
@@ -63,6 +74,7 @@ export default function ShipmentForm({
         formRef.current?.reset();
         setSelectedProduct("");
         setTonnage("");
+        setShipmentTime(currentTime());
         if (!fixedWarehouseId) setSelectedWarehouse("");
         router.refresh();
       }
@@ -136,12 +148,10 @@ export default function ShipmentForm({
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Araç Plakası
             </label>
-            <input
-              type="text"
+            <PlateInput
               name="vehicle_plate"
               required
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-              placeholder="34 ABC 123"
             />
           </div>
           <div>
@@ -195,13 +205,32 @@ export default function ShipmentForm({
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
-              Saat (opsiyonel)
+              Saat
             </label>
             <input
               type="time"
               name="shipment_time"
+              required
+              value={shipmentTime}
+              onChange={(e) => setShipmentTime(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Nakliyeci (opsiyonel)
+            </label>
+            <select
+              name="carrier_id"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            >
+              <option value="">Seçiniz</option>
+              {carriers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">

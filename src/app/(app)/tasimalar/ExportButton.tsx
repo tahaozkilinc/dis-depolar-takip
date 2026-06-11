@@ -11,6 +11,7 @@ interface ExportRow {
   vehicle_plate: string;
   tonnage: number;
   destination_name: string;
+  carrier_name: string;
   driver_name: string | null;
   notes: string | null;
 }
@@ -25,6 +26,7 @@ export default function ExportButton({ rows }: { rows: ExportRow[] }) {
       Plaka: r.vehicle_plate,
       Tonaj: Number(r.tonnage),
       Varış: r.destination_name,
+      Nakliyeci: r.carrier_name,
       Sürücü: r.driver_name ?? "",
       Not: r.notes ?? "",
     }));

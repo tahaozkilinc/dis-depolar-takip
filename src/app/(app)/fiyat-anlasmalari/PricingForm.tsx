@@ -2,16 +2,18 @@
 
 import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
-import type { Destination, Warehouse } from "@/lib/types";
+import type { Carrier, Destination, Warehouse } from "@/lib/types";
 import { addPricingAgreement } from "./actions";
 import FormattedNumberInput from "../components/FormattedNumberInput";
 
 export default function PricingForm({
   warehouses,
   destinations,
+  carriers,
 }: {
   warehouses: Warehouse[];
   destinations: Destination[];
+  carriers: Carrier[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -67,6 +69,22 @@ export default function PricingForm({
               {destinations.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Nakliyeci
+            </label>
+            <select
+              name="carrier_id"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            >
+              <option value="">Tümü</option>
+              {carriers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>

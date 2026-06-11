@@ -18,6 +18,7 @@ interface ShipmentCostRow {
   unit_price: number | null;
   transport_cost: number | null;
   products: { name: string } | null;
+  carriers: { name: string } | null;
 }
 
 function basisLabel(basis: PricingBasis | null): string {
@@ -82,7 +83,7 @@ export default async function MaliyetlerPage({
         supabase
           .from("shipment_costs")
           .select(
-            "shipment_id, vehicle_plate, tonnage, shipment_date, basis, unit_price, transport_cost, products(name)"
+            "shipment_id, vehicle_plate, tonnage, shipment_date, basis, unit_price, transport_cost, products(name), carriers(name)"
           )
           .eq("warehouse_id", warehouseId)
           .gte("shipment_date", from)
@@ -177,6 +178,7 @@ export default async function MaliyetlerPage({
                 <th className="px-4 py-2">Tarih</th>
                 <th className="px-4 py-2">Plaka</th>
                 <th className="px-4 py-2">Ürün</th>
+                <th className="px-4 py-2">Nakliyeci</th>
                 <th className="px-4 py-2 text-right">Tonaj</th>
                 <th className="px-4 py-2">Fiyat Tipi</th>
                 <th className="px-4 py-2 text-right">Birim Fiyat</th>
@@ -186,7 +188,7 @@ export default async function MaliyetlerPage({
             <tbody>
               {transportRows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-4 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-4 text-center text-gray-500">
                     Kayıt bulunamadı.
                   </td>
                 </tr>
@@ -196,6 +198,7 @@ export default async function MaliyetlerPage({
                   <td className="px-4 py-2">{formatDate(r.shipment_date)}</td>
                   <td className="px-4 py-2">{r.vehicle_plate}</td>
                   <td className="px-4 py-2">{r.products?.name ?? "-"}</td>
+                  <td className="px-4 py-2">{r.carriers?.name ?? "-"}</td>
                   <td className="px-4 py-2 text-right">
                     {formatTon(r.tonnage)}
                   </td>
@@ -218,7 +221,7 @@ export default async function MaliyetlerPage({
             {transportRows.length > 0 && (
               <tfoot>
                 <tr className="border-t bg-gray-50 font-semibold">
-                  <td className="px-4 py-2" colSpan={6}>
+                  <td className="px-4 py-2" colSpan={7}>
                     Toplam Taşıma Maliyeti (KDV Hariç)
                   </td>
                   <td className="px-4 py-2 text-right">

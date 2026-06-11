@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatTon } from "@/lib/format";
 import type {
+  Carrier,
   Destination,
   Profile,
   StockBalance,
@@ -19,6 +20,7 @@ interface ShipmentRow {
   created_by: string | null;
   products: { name: string } | null;
   destinations: { name: string } | null;
+  carriers: { name: string } | null;
 }
 
 export default async function TasimaGirisiPage() {
@@ -32,11 +34,13 @@ export default async function TasimaGirisiPage() {
     { data: profile },
     { data: warehouses },
     { data: destinations },
+    { data: carriers },
     { data: balances },
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>(),
     supabase.from("warehouses").select("*").eq("active", true).order("name"),
     supabase.from("destinations").select("*").order("name"),
+    supabase.from("carriers").select("*").eq("active", true).order("name"),
     supabase.from("stock_balances").select("*"),
   ]);
 
@@ -71,7 +75,7 @@ export default async function TasimaGirisiPage() {
   let shipmentsQuery = supabase
     .from("shipments")
     .select(
-      "id, shipment_date, shipment_time, vehicle_plate, tonnage, driver_name, created_by, products(name), destinations(name)"
+      "id, shipment_date, shipment_time, vehicle_plate, tonnage, driver_name, created_by, products(name), destinations(name), carriers(name)"
     )
     .order("created_at", { ascending: false })
     .limit(20);
@@ -91,6 +95,7 @@ export default async function TasimaGirisiPage() {
         <ShipmentForm
           warehouses={(warehouses ?? []) as Warehouse[]}
           destinations={(destinations ?? []) as Destination[]}
+          carriers={(carriers ?? []) as Carrier[]}
           balances={(balances ?? []) as StockBalance[]}
           fixedWarehouseId={fixedWarehouseId}
           fixedWarehouseName={fixedWarehouseName}
@@ -111,6 +116,7 @@ export default async function TasimaGirisiPage() {
                 <th className="px-4 py-2">Ürün</th>
                 <th className="px-4 py-2 text-right">Tonaj</th>
                 <th className="px-4 py-2">Varış</th>
+                <th className="px-4 py-2">Nakliyeci</th>
                 <th className="px-4 py-2">Sürücü</th>
                 <th className="px-4 py-2"></th>
               </tr>
@@ -118,7 +124,7 @@ export default async function TasimaGirisiPage() {
             <tbody>
               {shipmentRows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-4 text-center text-gray-500">
+                  <td colSpan={9} className="px-4 py-4 text-center text-gray-500">
                     Kayıt bulunamadı.
                   </td>
                 </tr>
@@ -135,6 +141,7 @@ export default async function TasimaGirisiPage() {
                       {formatTon(s.tonnage)}
                     </td>
                     <td className="px-4 py-2">{s.destinations?.name ?? "-"}</td>
+                    <td className="px-4 py-2">{s.carriers?.name ?? "-"}</td>
                     <td className="px-4 py-2">{s.driver_name ?? "-"}</td>
                     <td className="px-4 py-2 text-right">
                       {canDelete && <DeleteShipmentButton id={s.id} />}

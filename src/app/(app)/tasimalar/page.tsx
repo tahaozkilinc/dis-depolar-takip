@@ -15,6 +15,7 @@ interface ShipmentRow {
   warehouses: { name: string } | null;
   products: { name: string } | null;
   destinations: { name: string } | null;
+  carriers: { name: string } | null;
 }
 
 export default async function TasimalarPage({
@@ -56,7 +57,7 @@ export default async function TasimalarPage({
   let query = supabase
     .from("shipments")
     .select(
-      "id, shipment_date, shipment_time, vehicle_plate, tonnage, driver_name, notes, warehouses(name), products(name), destinations(name)"
+      "id, shipment_date, shipment_time, vehicle_plate, tonnage, driver_name, notes, warehouses(name), products(name), destinations(name), carriers(name)"
     )
     .order("shipment_date", { ascending: false })
     .order("created_at", { ascending: false });
@@ -85,6 +86,7 @@ export default async function TasimalarPage({
     vehicle_plate: r.vehicle_plate,
     tonnage: r.tonnage,
     destination_name: r.destinations?.name ?? "-",
+    carrier_name: r.carriers?.name ?? "-",
     driver_name: r.driver_name,
     notes: r.notes,
   }));
@@ -123,13 +125,14 @@ export default async function TasimalarPage({
               <th className="px-4 py-2">Plaka</th>
               <th className="px-4 py-2 text-right">Tonaj</th>
               <th className="px-4 py-2">Varış</th>
+              <th className="px-4 py-2">Nakliyeci</th>
               <th className="px-4 py-2">Sürücü</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-4 text-center text-gray-500">
+                <td colSpan={9} className="px-4 py-4 text-center text-gray-500">
                   Kayıt bulunamadı.
                 </td>
               </tr>
@@ -143,6 +146,7 @@ export default async function TasimalarPage({
                 <td className="px-4 py-2">{r.vehicle_plate}</td>
                 <td className="px-4 py-2 text-right">{formatTon(r.tonnage)}</td>
                 <td className="px-4 py-2">{r.destinations?.name ?? "-"}</td>
+                <td className="px-4 py-2">{r.carriers?.name ?? "-"}</td>
                 <td className="px-4 py-2">{r.driver_name ?? "-"}</td>
               </tr>
             ))}
@@ -156,7 +160,7 @@ export default async function TasimalarPage({
                 <td className="px-4 py-2 text-right">
                   {formatTon(totalTonnage)}
                 </td>
-                <td className="px-4 py-2" colSpan={2}></td>
+                <td className="px-4 py-2" colSpan={3}></td>
               </tr>
             </tfoot>
           )}
