@@ -87,6 +87,20 @@ export default async function TasimaGirisiPage() {
   const { data: shipments } = await shipmentsQuery;
   const shipmentRows = (shipments ?? []) as unknown as ShipmentRow[];
 
+  const creatorIds = Array.from(
+    new Set(shipmentRows.map((s) => s.created_by).filter(Boolean))
+  ) as string[];
+  const { data: creatorNames } =
+    creatorIds.length > 0
+      ? await supabase
+          .from("profile_names")
+          .select("id, full_name")
+          .in("id", creatorIds)
+      : { data: [] };
+  const nameById = new Map(
+    (creatorNames ?? []).map((p) => [p.id as string, p.full_name as string])
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-semibold text-gray-900">Taşıma Girişi</h1>
@@ -119,13 +133,14 @@ export default async function TasimaGirisiPage() {
                 <th className="px-4 py-2">Varış</th>
                 <th className="px-4 py-2">Nakliyeci</th>
                 <th className="px-4 py-2">Sürücü</th>
+                <th className="px-4 py-2">Giriş Yapan</th>
                 <th className="px-4 py-2"></th>
               </tr>
             </thead>
             <tbody>
               {shipmentRows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-4 text-center text-gray-500">
+                  <td colSpan={10} className="px-4 py-4 text-center text-gray-500">
                     Kayıt bulunamadı.
                   </td>
                 </tr>
@@ -144,6 +159,9 @@ export default async function TasimaGirisiPage() {
                     <td className="px-4 py-2">{s.destinations?.name ?? "-"}</td>
                     <td className="px-4 py-2">{s.carriers?.name ?? "-"}</td>
                     <td className="px-4 py-2">{s.driver_name ?? "-"}</td>
+                    <td className="px-4 py-2">
+                      {s.created_by ? nameById.get(s.created_by) ?? "-" : "-"}
+                    </td>
                     <td className="px-4 py-2 text-right">
                       {canDelete && <DeleteShipmentButton id={s.id} />}
                     </td>

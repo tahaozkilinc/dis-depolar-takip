@@ -75,6 +75,20 @@ export default async function StokGirisiPage() {
   ]);
 
   const stockEntries = (entries ?? []) as unknown as StockEntryRow[];
+
+  const creatorIds = Array.from(
+    new Set(stockEntries.map((e) => e.created_by).filter(Boolean))
+  ) as string[];
+  const { data: creatorNames } =
+    creatorIds.length > 0
+      ? await supabase
+          .from("profile_names")
+          .select("id, full_name")
+          .in("id", creatorIds)
+      : { data: [] };
+  const nameById = new Map(
+    (creatorNames ?? []).map((p) => [p.id as string, p.full_name as string])
+  );
   const stockBalances = (balances ?? []) as StockBalance[];
 
   return (
@@ -103,13 +117,14 @@ export default async function StokGirisiPage() {
                 <th className="px-4 py-2">Ürün</th>
                 <th className="px-4 py-2 text-right">Tonaj</th>
                 <th className="px-4 py-2">Not</th>
+                <th className="px-4 py-2">Giriş Yapan</th>
                 <th className="px-4 py-2"></th>
               </tr>
             </thead>
             <tbody>
               {stockEntries.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-4 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-4 text-center text-gray-500">
                     Kayıt bulunamadı.
                   </td>
                 </tr>
@@ -123,6 +138,9 @@ export default async function StokGirisiPage() {
                     {formatTon(e.tonnage)}
                   </td>
                   <td className="px-4 py-2">{e.note ?? "-"}</td>
+                  <td className="px-4 py-2">
+                    {e.created_by ? nameById.get(e.created_by) ?? "-" : "-"}
+                  </td>
                   <td className="px-4 py-2 text-right">
                     {(isAdmin || (!isViewer && e.created_by === user.id)) && (
                       <DeleteEntryButton id={e.id} />
