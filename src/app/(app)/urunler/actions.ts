@@ -7,7 +7,7 @@ import { toUpperTR } from "@/lib/text";
 export async function addProduct(formData: FormData) {
   const supabase = await createClient();
   const name = toUpperTR((formData.get("name") as string)?.trim() ?? "");
-  const unit = (formData.get("unit") as string)?.trim() || "ton";
+  const unit = toUpperTR((formData.get("unit") as string)?.trim() || "ton");
   if (!name) return { error: "Ürün adı zorunludur." };
   const { error } = await supabase.from("products").insert({ name, unit });
   if (error) return { error: error.message };

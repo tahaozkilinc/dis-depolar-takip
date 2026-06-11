@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 import PasswordForm from "./PasswordForm";
+import FullNameForm from "./FullNameForm";
 
 export default async function HesabimPage() {
   const supabase = await createClient();
@@ -29,12 +30,6 @@ export default async function HesabimPage() {
         </h2>
         <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-gray-500">Ad Soyad</dt>
-            <dd className="font-medium text-gray-900">
-              {profile?.full_name ?? "-"}
-            </dd>
-          </div>
-          <div>
             <dt className="text-gray-500">E-posta</dt>
             <dd className="font-medium text-gray-900">
               {profile?.email ?? session.user.email ?? "-"}
@@ -42,6 +37,8 @@ export default async function HesabimPage() {
           </div>
         </dl>
       </div>
+
+      <FullNameForm initialFullName={profile?.full_name ?? ""} />
 
       <PasswordForm />
     </div>
