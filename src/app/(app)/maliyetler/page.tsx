@@ -122,7 +122,7 @@ export default async function MaliyetlerPage({
       {/* Today's storage cost cards per warehouse */}
       <section>
         <h2 className="mb-3 text-sm font-semibold text-gray-700">
-          Bugünkü Depolama Maliyeti (Depo Bazlı)
+          Bugünkü Depolama Maliyeti (Depo Bazlı, KDV Hariç)
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {storageByWarehouse.size === 0 && (
@@ -243,7 +243,7 @@ export default async function MaliyetlerPage({
       {/* Storage costs */}
       <section>
         <h2 className="mb-3 text-sm font-semibold text-gray-700">
-          Depolama Maliyeti
+          Depolama Maliyeti (KDV Hariç)
         </h2>
         <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
           <table className="w-full text-sm">
@@ -284,7 +284,7 @@ export default async function MaliyetlerPage({
               <tfoot>
                 <tr className="border-t bg-gray-50 font-semibold">
                   <td className="px-4 py-2" colSpan={4}>
-                    Toplam Depolama Maliyeti
+                    Toplam Depolama Maliyeti (KDV Hariç)
                   </td>
                   <td className="px-4 py-2 text-right">
                     {formatTL(storageTotal)}

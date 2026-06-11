@@ -3,8 +3,10 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { formatTon } from "@/lib/format";
 import PieChart, { PIE_COLORS } from "@/components/PieChart";
+import StackedBarChart from "@/components/StackedBarChart";
 import type {
   Profile,
+  StockBalance,
   WarehouseTotal,
   TodayShipmentsSummary,
 } from "@/lib/types";
@@ -25,7 +27,7 @@ export default async function DashboardPage() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  const [{ data: profile }, { data: totals }, { data: todaySummary }] =
+  const [{ data: profile }, { data: totals }, { data: todaySummary }, { data: balances }] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -34,6 +36,7 @@ export default async function DashboardPage() {
         .maybeSingle<Profile>(),
       supabase.from("warehouse_totals").select("*"),
       supabase.from("today_shipments_summary").select("*"),
+      supabase.from("stock_balances").select("*"),
     ]);
 
   const isDepo = profile?.role === "depo";
@@ -46,6 +49,30 @@ export default async function DashboardPage() {
   const filteredSummary: TodayShipmentsSummary[] = (todaySummary ?? []).filter(
     (s) => !isDepo || s.warehouse_id === myWarehouseId
   );
+
+  const todayTotalTonnage = filteredSummary.reduce(
+    (sum, s) => sum + Number(s.total_tonnage),
+    0
+  );
+
+  const filteredBalances: StockBalance[] = (balances ?? []).filter(
+    (b) => !isDepo || b.warehouse_id === myWarehouseId
+  );
+
+  const stockByWarehouse = new Map<
+    string,
+    { warehouse_name: string; total_out: number; remaining: number }
+  >();
+  for (const b of filteredBalances) {
+    const existing = stockByWarehouse.get(b.warehouse_id) ?? {
+      warehouse_name: b.warehouse_name,
+      total_out: 0,
+      remaining: 0,
+    };
+    existing.total_out += Number(b.total_out);
+    existing.remaining += Number(b.remaining_tonnage);
+    stockByWarehouse.set(b.warehouse_id, existing);
+  }
 
   let todayShipmentsQuery = supabase
     .from("shipments")
@@ -107,16 +134,44 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Stock distribution pie chart */}
+      {/* Today's total shipment tonnage */}
+      <section className="rounded-lg border bg-brand-50 p-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-700">
+              Bugünkü Toplam Sevkiyat
+            </h2>
+            <div className="text-xs text-gray-400">
+              Tüm depolardan bugün çıkan toplam tonaj
+            </div>
+          </div>
+          <div className="text-3xl font-bold text-brand-700">
+            {formatTon(todayTotalTonnage)}{" "}
+            <span className="text-base font-normal text-gray-500">ton</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Çekilen vs kalan stock bar chart */}
       <section className="rounded-lg border bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-gray-700">
-          Depo Bazlı Stok Dağılımı
+          Depo Bazlı Stok Durumu (Çekilen / Kalan)
         </h2>
-        <PieChart
-          segments={filteredTotals.map((w, i) => ({
+        <div className="mb-4 flex items-center gap-4 text-xs text-gray-500">
+          <span className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-sm bg-amber-500" /> Çekilen
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-sm bg-emerald-600" /> Kalan
+          </span>
+        </div>
+        <StackedBarChart
+          rows={Array.from(stockByWarehouse.values()).map((w) => ({
             label: w.warehouse_name,
-            value: Number(w.total_remaining_tonnage),
-            color: PIE_COLORS[i % PIE_COLORS.length],
+            segments: [
+              { label: "Çekilen", value: w.total_out, color: "#f59e0b" },
+              { label: "Kalan", value: w.remaining, color: "#059669" },
+            ],
           }))}
           formatValue={(v) => `${formatTon(v)} ton`}
         />
