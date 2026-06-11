@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { formatTon } from "@/lib/format";
+import PieChart, { PIE_COLORS } from "@/components/PieChart";
 import type {
   Profile,
   WarehouseTotal,
@@ -106,52 +107,38 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Today's shipments */}
-      <section>
+      {/* Stock distribution pie chart */}
+      <section className="rounded-lg border bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-gray-700">
-          Bugünkü Sevkiyatlar
+          Depo Bazlı Stok Dağılımı
         </h2>
-        <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
-          {filteredSummary.length === 0 ? (
-            <p className="p-4 text-sm text-gray-500">
-              Bugün henüz sevkiyat yok.
-            </p>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
-                <tr>
-                  <th className="px-4 py-2">Depo</th>
-                  <th className="px-4 py-2 text-right">Toplam Tonaj</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSummary.map((s) => (
-                  <tr key={s.warehouse_id} className="border-t">
-                    <td className="px-4 py-2">{s.warehouse_name}</td>
-                    <td className="px-4 py-2 text-right">
-                      {formatTon(s.total_tonnage)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              {filteredSummary.length > 1 && (
-                <tfoot>
-                  <tr className="border-t bg-gray-50 font-semibold">
-                    <td className="px-4 py-2">Genel Toplam</td>
-                    <td className="px-4 py-2 text-right">
-                      {formatTon(
-                        filteredSummary.reduce(
-                          (sum, s) => sum + Number(s.total_tonnage),
-                          0
-                        )
-                      )}
-                    </td>
-                  </tr>
-                </tfoot>
-              )}
-            </table>
-          )}
-        </div>
+        <PieChart
+          segments={filteredTotals.map((w, i) => ({
+            label: w.warehouse_name,
+            value: Number(w.total_remaining_tonnage),
+            color: PIE_COLORS[i % PIE_COLORS.length],
+          }))}
+          formatValue={(v) => `${formatTon(v)} ton`}
+        />
+      </section>
+
+      {/* Today's shipments */}
+      <section className="rounded-lg border bg-white p-4 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-gray-700">
+          Bugünkü Taşınan Tonaj (Depo Bazlı)
+        </h2>
+        {filteredSummary.length === 0 ? (
+          <p className="text-sm text-gray-500">Bugün henüz sevkiyat yok.</p>
+        ) : (
+          <PieChart
+            segments={filteredSummary.map((s, i) => ({
+              label: s.warehouse_name,
+              value: Number(s.total_tonnage),
+              color: PIE_COLORS[i % PIE_COLORS.length],
+            }))}
+            formatValue={(v) => `${formatTon(v)} ton`}
+          />
+        )}
       </section>
 
       {/* Today's transfers (from -> to) */}
