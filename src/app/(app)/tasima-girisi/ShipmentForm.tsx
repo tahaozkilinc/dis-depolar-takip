@@ -22,6 +22,7 @@ export default function ShipmentForm({
   balances,
   fixedWarehouseId,
   fixedWarehouseName,
+  lockDateTime,
 }: {
   warehouses: Warehouse[];
   destinations: Destination[];
@@ -29,6 +30,7 @@ export default function ShipmentForm({
   balances: StockBalance[];
   fixedWarehouseId: string | null;
   fixedWarehouseName: string | null;
+  lockDateTime?: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -196,26 +198,50 @@ export default function ShipmentForm({
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Tarih
             </label>
-            <input
-              type="date"
-              name="shipment_date"
-              defaultValue={today}
-              required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-            />
+            {lockDateTime ? (
+              <>
+                <input type="hidden" name="shipment_date" value={today} />
+                <input
+                  type="text"
+                  disabled
+                  value={today}
+                  className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-600"
+                />
+              </>
+            ) : (
+              <input
+                type="date"
+                name="shipment_date"
+                defaultValue={today}
+                required
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Saat
             </label>
-            <input
-              type="time"
-              name="shipment_time"
-              required
-              value={shipmentTime}
-              onChange={(e) => setShipmentTime(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-            />
+            {lockDateTime ? (
+              <>
+                <input type="hidden" name="shipment_time" value={shipmentTime} />
+                <input
+                  type="text"
+                  disabled
+                  value={shipmentTime}
+                  className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-600"
+                />
+              </>
+            ) : (
+              <input
+                type="time"
+                name="shipment_time"
+                required
+                value={shipmentTime}
+                onChange={(e) => setShipmentTime(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">

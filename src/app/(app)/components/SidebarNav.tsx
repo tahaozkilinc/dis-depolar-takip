@@ -17,17 +17,17 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", roles: ["admin", "depo", "viewer"] },
-  { href: "/stok-girisi", label: "Stok Girişi", roles: ["admin", "depo", "viewer"] },
-  { href: "/tasima-girisi", label: "Taşıma Girişi", roles: ["admin", "depo", "viewer"] },
-  { href: "/tasimalar", label: "Taşımalar (Tonaj Listesi)", roles: ["admin", "depo", "viewer"] },
+  { href: "/dashboard", label: "Dashboard", roles: ["admin", "depo", "viewer", "operasyon_takip"] },
+  { href: "/stok-girisi", label: "Stok Girişi", roles: ["admin", "depo", "viewer", "operasyon"] },
+  { href: "/tasima-girisi", label: "Taşıma Girişi", roles: ["admin", "depo", "viewer", "operasyon_takip"] },
+  { href: "/tasimalar", label: "Taşımalar (Tonaj Listesi)", roles: ["admin", "depo", "viewer", "operasyon_takip"] },
   { href: "/maliyetler/depolama", label: "Depolama Maliyeti", roles: ["admin", "viewer"] },
   { href: "/maliyetler/nakliye", label: "Nakliye Maliyeti", roles: ["admin", "viewer"] },
-  { href: "/depolar", label: "Depolar", roles: ["admin", "viewer"] },
+  { href: "/depolar", label: "Depolar", roles: ["admin", "viewer", "operasyon"] },
   { href: "/urunler", label: "Ürünler & Varış Noktaları", roles: ["admin", "viewer"] },
   { href: "/nakliyeciler", label: "Nakliyeciler", roles: ["admin", "viewer"] },
   { href: "/fiyat-anlasmalari", label: "Fiyat Anlaşmaları", roles: ["admin", "viewer"] },
-  { href: "/depolama-ucretleri", label: "Depolama Ücretleri", roles: ["admin", "viewer"] },
+  { href: "/depolama-ucretleri", label: "Depolama Ücretleri", roles: ["admin", "viewer", "operasyon"] },
   { href: "/kullanicilar", label: "Kullanıcılar", roles: ["admin"] },
 ];
 
@@ -35,6 +35,8 @@ const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Yönetici",
   depo: "Depo Kullanıcısı",
   viewer: "Görüntüleyici",
+  operasyon: "Operasyon (Stok)",
+  operasyon_takip: "Operasyon Takip",
 };
 
 export default function SidebarNav({

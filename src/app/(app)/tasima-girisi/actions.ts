@@ -12,20 +12,39 @@ export async function addShipment(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Oturum bulunamadı." };
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle<{ role: string }>();
+
   const warehouse_id = formData.get("warehouse_id") as string;
   const product_id = formData.get("product_id") as string;
   const vehicle_plate = (formData.get("vehicle_plate") as string)?.trim();
   const tonnage = parseFloat(formData.get("tonnage") as string);
   const destination_id = (formData.get("destination_id") as string) || null;
   const carrier_id = (formData.get("carrier_id") as string) || null;
-  const shipment_date = formData.get("shipment_date") as string;
-  const shipment_time =
-    (formData.get("shipment_time") as string)?.trim() ||
-    new Date().toLocaleTimeString("tr-TR", {
-      timeZone: "Europe/Istanbul",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+
+  const now = new Date();
+  const todayIstanbul = now.toLocaleDateString("en-CA", {
+    timeZone: "Europe/Istanbul",
+  });
+  const nowTimeIstanbul = now.toLocaleTimeString("tr-TR", {
+    timeZone: "Europe/Istanbul",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  let shipment_date = formData.get("shipment_date") as string;
+  let shipment_time = (formData.get("shipment_time") as string)?.trim();
+
+  if (profile?.role === "operasyon_takip") {
+    // Operasyon takip kullanıcıları sadece bugünün tarih/saatiyle taşıma girebilir.
+    shipment_date = todayIstanbul;
+    shipment_time = nowTimeIstanbul;
+  } else {
+    shipment_time = shipment_time || nowTimeIstanbul;
+  }
   const driverNameRaw = (formData.get("driver_name") as string)?.trim();
   const driver_name = driverNameRaw ? toUpperTR(driverNameRaw) : null;
   const notesRaw = (formData.get("notes") as string)?.trim();

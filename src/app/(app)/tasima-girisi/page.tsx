@@ -99,6 +99,7 @@ export default async function TasimaGirisiPage() {
           balances={(balances ?? []) as StockBalance[]}
           fixedWarehouseId={fixedWarehouseId}
           fixedWarehouseName={fixedWarehouseName}
+          lockDateTime={profile.role === "operasyon_takip"}
         />
       )}
 

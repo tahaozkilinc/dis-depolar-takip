@@ -29,7 +29,7 @@ export default async function DashboardPage() {
       supabase.from("stock_balances").select("*"),
     ]);
 
-  const isDepo = profile?.role === "depo";
+  const isDepo = profile?.role === "depo" || profile?.role === "operasyon_takip";
   const myWarehouseId = profile?.warehouse_id ?? null;
 
   const filteredTotals: WarehouseTotal[] = (totals ?? []).filter(

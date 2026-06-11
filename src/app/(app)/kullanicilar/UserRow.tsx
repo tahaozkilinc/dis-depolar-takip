@@ -51,10 +51,12 @@ export default function UserRow({
           <option value="admin">Yönetici</option>
           <option value="depo">Depo</option>
           <option value="viewer">Görüntüleyici</option>
+          <option value="operasyon">Operasyon (Stok)</option>
+          <option value="operasyon_takip">Operasyon Takip</option>
         </select>
       </td>
       <td className="px-4 py-2">
-        {role === "depo" ? (
+        {role === "depo" || role === "operasyon_takip" ? (
           <select
             value={warehouseId}
             onChange={(e) => setWarehouseId(e.target.value)}

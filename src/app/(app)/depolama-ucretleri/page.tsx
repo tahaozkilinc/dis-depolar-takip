@@ -29,7 +29,7 @@ export default async function DepolamaUcretleriPage() {
       .order("valid_from", { ascending: false }),
   ]);
 
-  const isViewer = profile?.role === "viewer";
+  const canEdit = profile?.role === "admin" || profile?.role === "operasyon";
   const rows = (rates ?? []) as unknown as RateRow[];
 
   return (
@@ -38,7 +38,7 @@ export default async function DepolamaUcretleriPage() {
         Depolama Ücretleri
       </h1>
 
-      {!isViewer && <StorageRateForm warehouses={(warehouses ?? []) as Warehouse[]} />}
+      {canEdit && <StorageRateForm warehouses={(warehouses ?? []) as Warehouse[]} />}
 
       <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
         <table className="w-full text-sm">
@@ -48,13 +48,13 @@ export default async function DepolamaUcretleriPage() {
               <th className="px-4 py-2 text-right">Ton/Gün Ücreti</th>
               <th className="px-4 py-2">Geçerlilik</th>
               <th className="px-4 py-2">Not</th>
-              {!isViewer && <th className="px-4 py-2"></th>}
+              {canEdit && <th className="px-4 py-2"></th>}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={isViewer ? 4 : 5} className="px-4 py-4 text-center text-gray-500">
+                <td colSpan={canEdit ? 5 : 4} className="px-4 py-4 text-center text-gray-500">
                   Kayıt bulunamadı.
                 </td>
               </tr>
@@ -70,7 +70,7 @@ export default async function DepolamaUcretleriPage() {
                   {r.valid_to ? formatDate(r.valid_to) : "Süresiz"}
                 </td>
                 <td className="px-4 py-2">{r.note ?? "-"}</td>
-                {!isViewer && (
+                {canEdit && (
                   <td className="px-4 py-2 text-right">
                     <DeleteRateButton id={r.id} />
                   </td>

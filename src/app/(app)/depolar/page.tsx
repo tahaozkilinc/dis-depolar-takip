@@ -20,7 +20,7 @@ export default async function DepolarPage() {
   ]);
 
   const list = (warehouses ?? []) as Warehouse[];
-  const readOnly = profile?.role !== "admin";
+  const readOnly = profile?.role !== "admin" && profile?.role !== "operasyon";
 
   return (
     <div className="flex flex-col gap-6">

@@ -43,7 +43,9 @@ export default async function StokGirisiPage() {
 
   const isAdmin = profile?.role === "admin";
   const isViewer = profile?.role === "viewer";
-  const fixedWarehouseId = isAdmin || isViewer ? null : profile?.warehouse_id ?? null;
+  const isOperasyon = profile?.role === "operasyon";
+  const fixedWarehouseId =
+    isAdmin || isViewer || isOperasyon ? null : profile?.warehouse_id ?? null;
   const fixedWarehouseName = fixedWarehouseId
     ? (warehouses ?? []).find((w) => w.id === fixedWarehouseId)?.name ?? null
     : null;

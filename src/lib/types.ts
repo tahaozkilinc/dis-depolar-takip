@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "depo" | "viewer";
+export type UserRole = "admin" | "depo" | "viewer" | "operasyon" | "operasyon_takip";
 export type PricingBasis = "tonnage" | "vehicle";
 
 export interface Warehouse {

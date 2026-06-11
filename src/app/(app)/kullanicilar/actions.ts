@@ -31,7 +31,10 @@ export async function updateProfile(
     active: boolean;
   } = {
     role: data.role,
-    warehouse_id: data.role === "depo" ? data.warehouse_id : null,
+    warehouse_id:
+      data.role === "depo" || data.role === "operasyon_takip"
+        ? data.warehouse_id
+        : null,
     active: data.active,
   };
 

@@ -38,9 +38,10 @@ export default function LoginForm() {
           <Image
             src="/sunar-logo.svg"
             alt="Sunar"
-            width={180}
-            height={80}
+            width={360}
+            height={160}
             priority
+            className="h-auto w-full max-w-[280px]"
           />
         </div>
         <h1 className="mb-1 text-center text-xl font-semibold text-gray-900">
