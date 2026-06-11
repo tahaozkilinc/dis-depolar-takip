@@ -43,8 +43,10 @@ function sanitize(
   decimals: number,
   maxIntDigits: number
 ): ParsedNumber {
-  // Accept both "." and "," as the decimal separator the user types.
-  const cleaned = input.replace(/[^\d.,]/g, "").replace(/\./g, ",");
+  // "." is reserved for the auto-inserted thousands separator (it may
+  // already be present in the displayed value from a previous render), so
+  // strip it out entirely. Only "," is treated as the decimal separator.
+  const cleaned = input.replace(/[^\d,]/g, "");
 
   const firstComma = cleaned.indexOf(",");
   let intDigits: string;
