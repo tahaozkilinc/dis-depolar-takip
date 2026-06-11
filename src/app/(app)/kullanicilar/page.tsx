@@ -31,6 +31,7 @@ export default async function KullanicilarPage() {
           <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
             <tr>
               <th className="px-4 py-2">Ad Soyad</th>
+              <th className="px-4 py-2">E-posta</th>
               <th className="px-4 py-2">Rol</th>
               <th className="px-4 py-2">Depo</th>
               <th className="px-4 py-2 text-center">Aktif</th>
@@ -40,7 +41,7 @@ export default async function KullanicilarPage() {
           <tbody>
             {list.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-4 text-center text-gray-500">
+                <td colSpan={6} className="px-4 py-4 text-center text-gray-500">
                   Kayıt bulunamadı.
                 </td>
               </tr>

@@ -40,6 +40,7 @@ export default function UserRow({
         {profile.full_name ?? "-"}
         {isSelf && <span className="ml-1 text-xs text-gray-400">(siz)</span>}
       </td>
+      <td className="px-4 py-2 text-gray-700">{profile.email ?? "-"}</td>
       <td className="px-4 py-2">
         <select
           value={role}

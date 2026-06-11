@@ -35,6 +35,7 @@ export interface Carrier {
 export interface Profile {
   id: string;
   full_name: string | null;
+  email: string | null;
   role: UserRole;
   warehouse_id: string | null;
   active: boolean;
