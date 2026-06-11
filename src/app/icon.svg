@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- silo body (flat bottom cylinder) -->
+  <rect x="24" y="36" width="72" height="76" rx="6" fill="#5B9A5C"/>
+  <ellipse cx="60" cy="36" rx="36" ry="11" fill="#7BB97C"/>
+  <!-- dome roof -->
+  <path d="M24 36 a36 25 0 0 1 72 0 z" fill="#3D7A3E"/>
+  <!-- vertical ribs -->
+  <line x1="42" y1="39" x2="42" y2="112" stroke="#4C8A4D" stroke-width="3"/>
+  <line x1="60" y1="42" x2="60" y2="112" stroke="#4C8A4D" stroke-width="3"/>
+  <line x1="78" y1="39" x2="78" y2="112" stroke="#4C8A4D" stroke-width="3"/>
+</svg>

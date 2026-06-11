@@ -140,27 +140,35 @@ const styles = StyleSheet.create({
   },
 });
 
-function SunarLogo({ width = 130 }: { width?: number }) {
-  const height = (width * 160) / 360;
+function SunarLogo() {
   return (
-    <Svg viewBox="0 0 360 160" width={width} height={height}>
-      <G fill={YELLOW}>
-        <Rect x={0} y={0} width={20} height={20} rx={6} />
-        <Rect x={26} y={0} width={20} height={20} rx={6} />
-        <Rect x={52} y={0} width={20} height={20} rx={6} />
-        <Rect x={0} y={26} width={20} height={20} rx={6} />
-        <Rect x={26} y={26} width={20} height={20} rx={6} />
-        <Rect x={52} y={26} width={20} height={20} rx={6} />
-        <Rect x={0} y={52} width={20} height={20} rx={6} />
-        <Rect x={26} y={52} width={20} height={20} rx={6} />
-        <Rect x={52} y={52} width={20} height={20} rx={6} />
-        <Rect x={0} y={78} width={20} height={20} rx={6} />
-        <Rect x={26} y={78} width={20} height={20} rx={6} />
-      </G>
-      <Text x={92} y={78} style={{ fontFamily: "Times-Bold", fontSize: 84, fill: GREEN }}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+      <Svg viewBox="0 0 72 98" width={26} height={35}>
+        <G fill={YELLOW}>
+          <Rect x={0} y={0} width={20} height={20} rx={6} />
+          <Rect x={26} y={0} width={20} height={20} rx={6} />
+          <Rect x={52} y={0} width={20} height={20} rx={6} />
+          <Rect x={0} y={26} width={20} height={20} rx={6} />
+          <Rect x={26} y={26} width={20} height={20} rx={6} />
+          <Rect x={52} y={26} width={20} height={20} rx={6} />
+          <Rect x={0} y={52} width={20} height={20} rx={6} />
+          <Rect x={26} y={52} width={20} height={20} rx={6} />
+          <Rect x={52} y={52} width={20} height={20} rx={6} />
+          <Rect x={0} y={78} width={20} height={20} rx={6} />
+          <Rect x={26} y={78} width={20} height={20} rx={6} />
+        </G>
+      </Svg>
+      <Text
+        style={{
+          fontFamily: "Times-Bold",
+          fontSize: 30,
+          color: GREEN,
+          letterSpacing: 1,
+        }}
+      >
         SUNAR
       </Text>
-    </Svg>
+    </View>
   );
 }
 
@@ -199,7 +207,7 @@ export default function DailyReportDocument({ data }: { data: DailyReportData })
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.headerRow}>
-          <SunarLogo width={130} />
+          <SunarLogo />
           <Text style={styles.generatedAt}>
             Rapor Tarihi: {data.generatedAt}
           </Text>
