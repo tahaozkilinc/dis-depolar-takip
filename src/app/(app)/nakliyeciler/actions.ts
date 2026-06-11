@@ -55,8 +55,12 @@ export async function updateCarrierContacts(
 ) {
   const supabase = await createClient();
   const cleaned = contacts
-    .map((c) => ({ name: c.name.trim(), phone: c.phone.trim() }))
-    .filter((c) => c.name || c.phone);
+    .map((c) => ({
+      name: toUpperTR(c.name.trim()),
+      role: toUpperTR(c.role.trim()),
+      phone: c.phone.trim(),
+    }))
+    .filter((c) => c.name || c.role || c.phone);
 
   const { error } = await supabase
     .from("carriers")

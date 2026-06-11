@@ -17,7 +17,9 @@ export default function ContactsEditor({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [rows, setRows] = useState<CarrierContact[]>(
-    contacts.length > 0 ? contacts : [{ name: "", phone: "" }]
+    contacts.length > 0
+      ? contacts.map((c) => ({ name: c.name ?? "", role: c.role ?? "", phone: c.phone ?? "" }))
+      : [{ name: "", role: "", phone: "" }]
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +30,7 @@ export default function ContactsEditor({
   }
 
   function addRow() {
-    setRows((prev) => [...prev, { name: "", phone: "" }]);
+    setRows((prev) => [...prev, { name: "", role: "", phone: "" }]);
   }
 
   function removeRow(index: number) {
@@ -45,7 +47,7 @@ export default function ContactsEditor({
   }
 
   if (readOnly) {
-    const filled = contacts.filter((c) => c.name || c.phone);
+    const filled = contacts.filter((c) => c.name || c.role || c.phone);
     if (filled.length === 0) {
       return <p className="text-sm text-gray-500">Yetkili bilgisi girilmemiş.</p>;
     }
@@ -54,6 +56,7 @@ export default function ContactsEditor({
         {filled.map((c, i) => (
           <li key={i} className="flex items-center gap-2">
             <span className="font-medium text-gray-900">{c.name || "-"}</span>
+            {c.role && <span className="text-gray-500">({c.role})</span>}
             {c.phone && <span className="text-gray-500">{c.phone}</span>}
           </li>
         ))}
@@ -70,7 +73,14 @@ export default function ContactsEditor({
             placeholder="Ad Soyad"
             value={row.name}
             onChange={(e) => updateRow(i, "name", e.target.value)}
-            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+          <input
+            type="text"
+            placeholder="Görev Tanımı"
+            value={row.role}
+            onChange={(e) => updateRow(i, "role", e.target.value)}
+            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
           <input
             type="text"

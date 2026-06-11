@@ -27,6 +27,7 @@ export interface Destination {
 
 export interface CarrierContact {
   name: string;
+  role: string;
   phone: string;
 }
 
