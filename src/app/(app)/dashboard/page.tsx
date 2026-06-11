@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { formatTon } from "@/lib/format";
+import { formatTonWhole } from "@/lib/format";
 import PieChart, { PIE_COLORS } from "@/components/PieChart";
 import StackedBarChart from "@/components/StackedBarChart";
 import DailyReportButton from "./DailyReportButton";
@@ -50,6 +50,11 @@ export default async function DashboardPage() {
     (b) => !isDepo || b.warehouse_id === myWarehouseId
   );
 
+  const totalRemaining = filteredTotals.reduce(
+    (sum, w) => sum + Number(w.total_remaining_tonnage),
+    0
+  );
+
   const stockByWarehouse = new Map<
     string,
     { warehouse_name: string; total_out: number; remaining: number }
@@ -85,35 +90,17 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Warehouse cards */}
-      <section>
-        <h2 className="mb-3 text-sm font-semibold text-gray-700">
-          Depo Stok Durumu
-        </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredTotals.length === 0 && (
-            <p className="text-sm text-gray-500">Veri bulunamadı.</p>
-          )}
-          {filteredTotals.map((w) => (
-            <div
-              key={w.warehouse_id}
-              className="flex items-center gap-4 rounded-lg border bg-white p-4 shadow-sm"
-            >
-              <Image src="/silo.svg" alt="" width={48} height={48} />
-              <div>
-                <div className="text-sm font-medium text-gray-500">
-                  {w.warehouse_name}
-                </div>
-                <div className="mt-1 text-2xl font-semibold text-gray-900">
-                  {formatTon(w.total_remaining_tonnage)}{" "}
-                  <span className="text-sm font-normal text-gray-500">
-                    ton
-                  </span>
-                </div>
-                <div className="text-xs text-gray-400">Kalan stok</div>
-              </div>
-            </div>
-          ))}
+      {/* Total stock card */}
+      <section className="flex items-center gap-4 rounded-lg border bg-white p-4 shadow-sm">
+        <Image src="/silo.svg" alt="" width={48} height={48} />
+        <div>
+          <div className="text-sm font-medium text-gray-500">
+            Toplam Kalan Stok
+          </div>
+          <div className="mt-1 text-3xl font-bold text-gray-900">
+            {formatTonWhole(totalRemaining)}{" "}
+            <span className="text-base font-normal text-gray-500">ton</span>
+          </div>
         </div>
       </section>
 
@@ -138,7 +125,7 @@ export default async function DashboardPage() {
               { label: "Kalan", value: w.remaining, color: "#059669" },
             ],
           }))}
-          formatValue={(v) => `${formatTon(v)} ton`}
+          formatValue={(v) => `${formatTonWhole(v)} ton`}
         />
       </section>
 
@@ -158,7 +145,7 @@ export default async function DashboardPage() {
                   value: Number(s.total_tonnage),
                   color: PIE_COLORS[i % PIE_COLORS.length],
                 }))}
-                formatValue={(v) => `${formatTon(v)} ton`}
+                formatValue={(v) => `${formatTonWhole(v)} ton`}
               />
             )}
           </div>
@@ -170,7 +157,7 @@ export default async function DashboardPage() {
               Tüm depolardan bugün çıkan toplam tonaj
             </div>
             <div className="mt-2 text-3xl font-bold text-brand-700">
-              {formatTon(todayTotalTonnage)}{" "}
+              {formatTonWhole(todayTotalTonnage)}{" "}
               <span className="text-base font-normal text-gray-500">ton</span>
             </div>
           </div>

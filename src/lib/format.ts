@@ -22,3 +22,9 @@ export function formatTon(n: number | null | undefined): string {
     maximumFractionDigits: 3,
   });
 }
+
+/** Tam sayı ton gösterimi (ondalık olmadan, binlik ayraçlı). */
+export function formatTonWhole(n: number | null | undefined): string {
+  if (n === null || n === undefined) return "-";
+  return Math.round(n).toLocaleString("tr-TR");
+}
