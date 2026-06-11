@@ -29,6 +29,11 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/fiyat-anlasmalari", label: "Fiyat Anlaşmaları", roles: ["admin", "viewer"] },
   { href: "/depolama-ucretleri", label: "Depolama Ücretleri", roles: ["admin", "viewer", "operasyon"] },
   { href: "/kullanicilar", label: "Kullanıcılar", roles: ["admin"] },
+  {
+    href: "/hesabim",
+    label: "Hesabım",
+    roles: ["admin", "depo", "viewer", "operasyon", "operasyon_takip"],
+  },
 ];
 
 const ROLE_LABELS: Record<UserRole, string> = {
