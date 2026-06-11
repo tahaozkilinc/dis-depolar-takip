@@ -52,8 +52,14 @@ export default function ShipmentForm({
     );
   }, [balances, selectedWarehouse]);
 
-  const selectedBalance = productOptions.find(
+  const effectiveSelectedProduct = productOptions.some(
     (p) => p.product_id === selectedProduct
+  )
+    ? selectedProduct
+    : productOptions[0]?.product_id ?? "";
+
+  const selectedBalance = productOptions.find(
+    (p) => p.product_id === effectiveSelectedProduct
   );
 
   const overLimit =
@@ -128,7 +134,7 @@ export default function ShipmentForm({
             <select
               name="product_id"
               required
-              value={selectedProduct}
+              value={effectiveSelectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
               disabled={!selectedWarehouse}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-gray-100"

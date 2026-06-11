@@ -306,7 +306,7 @@ export default function DailyReportDocument({ data }: { data: DailyReportData })
           {data.carrierRows.length === 0 && (
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>
-                {data.yesterdayLabel} herhangi bir yükleme yapılmamıştır.
+                {data.yesterdayLabel} henüz herhangi bir yükleme yapılmamıştır.
               </Text>
             </View>
           )}

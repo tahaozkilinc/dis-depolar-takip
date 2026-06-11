@@ -38,8 +38,7 @@ export async function GET() {
   }
 
   const now = new Date();
-  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  const yesterdayDate = yesterday.toLocaleDateString("en-CA", {
+  const todayDate = now.toLocaleDateString("en-CA", {
     timeZone: "Europe/Istanbul",
   });
 
@@ -50,23 +49,23 @@ export async function GET() {
       .select(
         "warehouse_id, product_id, tonnage, carrier_id, warehouses(name), products(name), carriers(name)"
       )
-      .eq("shipment_date", yesterdayDate),
+      .eq("shipment_date", todayDate),
   ]);
 
   const balanceRows = (balances ?? []) as StockBalance[];
   const shipmentRows = (shipments ?? []) as unknown as ShipmentRow[];
 
-  const yesterdayByKey = new Map<string, number>();
+  const todayByKey = new Map<string, number>();
   for (const s of shipmentRows) {
     const key = `${s.warehouse_id}-${s.product_id}`;
-    yesterdayByKey.set(key, (yesterdayByKey.get(key) ?? 0) + Number(s.tonnage));
+    todayByKey.set(key, (todayByKey.get(key) ?? 0) + Number(s.tonnage));
   }
 
   const warehouseRows: DailyReportWarehouseRow[] = balanceRows.map((b) => ({
     warehouse_name: b.warehouse_name,
     product_name: b.product_name,
     remaining_tonnage: Number(b.remaining_tonnage),
-    yesterday_tonnage: yesterdayByKey.get(`${b.warehouse_id}-${b.product_id}`) ?? 0,
+    yesterday_tonnage: todayByKey.get(`${b.warehouse_id}-${b.product_id}`) ?? 0,
   }));
 
   const carrierMap = new Map<string, { shipment_count: number; total_tonnage: number }>();
@@ -82,7 +81,7 @@ export async function GET() {
     .sort((a, b) => b.total_tonnage - a.total_tonnage);
 
   const totalRemaining = balanceRows.reduce((sum, b) => sum + Number(b.remaining_tonnage), 0);
-  const totalYesterday = shipmentRows.reduce((sum, s) => sum + Number(s.tonnage), 0);
+  const totalToday = shipmentRows.reduce((sum, s) => sum + Number(s.tonnage), 0);
 
   const generatedAt = now.toLocaleString("tr-TR", {
     timeZone: "Europe/Istanbul",
@@ -90,17 +89,13 @@ export async function GET() {
     timeStyle: "short",
   });
 
-  const yesterdayLabel = yesterday.toLocaleDateString("tr-TR", {
-    timeZone: "Europe/Istanbul",
-  });
-
   const buffer = await renderToBuffer(
     DailyReportDocument({
       data: {
         generatedAt,
-        yesterdayLabel: `${yesterdayLabel} (Dün)`,
+        yesterdayLabel: "Bugün",
         totalRemaining,
-        totalYesterday,
+        totalYesterday: totalToday,
         yesterdayShipmentCount: shipmentRows.length,
         warehouseRows,
         carrierRows,
