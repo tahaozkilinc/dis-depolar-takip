@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Carrier } from "@/lib/types";
@@ -39,7 +40,11 @@ export default function CarrierRow({
   if (readOnly) {
     return (
       <tr className="border-t">
-        <td className="px-4 py-2 font-medium">{carrier.name}</td>
+        <td className="px-4 py-2 font-medium">
+          <Link href={`/nakliyeciler/${carrier.id}`} className="text-brand-600 hover:underline">
+            {carrier.name}
+          </Link>
+        </td>
         <td className="px-4 py-2 text-center">
           {carrier.active ? "Evet" : "Hayır"}
         </td>
@@ -50,6 +55,11 @@ export default function CarrierRow({
   return (
     <tr className="border-t">
       <td className="px-4 py-2">
+        <div className="mb-1">
+          <Link href={`/nakliyeciler/${carrier.id}`} className="text-xs text-brand-600 hover:underline">
+            Profili Görüntüle
+          </Link>
+        </div>
         <input
           type="text"
           value={name}

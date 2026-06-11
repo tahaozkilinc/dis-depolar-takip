@@ -8,6 +8,8 @@ interface FormattedNumberInputProps {
    *  (e.g. 1233 -> "1.233"). >0 = fixed-decimal entry where the last N typed
    *  digits become the decimal part (e.g. 23312 with decimals=3 -> "23.312"). */
   decimals?: number;
+  /** Maximum number of digits the user can type in total (integer + decimal). */
+  maxDigits?: number;
   defaultValue?: number | string | null;
   value?: string;
   onValueChange?: (raw: string) => void;
@@ -51,6 +53,7 @@ function format(digits: string, decimals: number) {
 export default function FormattedNumberInput({
   name,
   decimals = 2,
+  maxDigits,
   defaultValue,
   value,
   onValueChange,
@@ -70,7 +73,8 @@ export default function FormattedNumberInput({
   const { display, raw } = format(digits, decimals);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const newDigits = e.target.value.replace(/\D/g, "");
+    let newDigits = e.target.value.replace(/\D/g, "");
+    if (maxDigits) newDigits = newDigits.slice(0, maxDigits);
     if (isControlled) {
       onValueChange?.(format(newDigits, decimals).raw);
     } else {

@@ -37,16 +37,19 @@ export default function StackedBarChart({
               <span className="font-medium text-gray-700">{row.label}</span>
               <span className="text-gray-500">{formatValue(total)}</span>
             </div>
-            <div className="flex h-4 w-full overflow-hidden rounded-full bg-gray-100">
+            <div className="flex h-7 w-full overflow-hidden rounded-full bg-gray-100">
               {row.segments.map((seg) => (
                 <div
                   key={seg.label}
                   title={`${seg.label}: ${formatValue(seg.value)}`}
+                  className="flex items-center justify-center overflow-hidden whitespace-nowrap text-xs font-medium text-white"
                   style={{
                     width: `${(seg.value / max) * 100}%`,
                     backgroundColor: seg.color,
                   }}
-                />
+                >
+                  {seg.value > 0 ? formatValue(seg.value) : ""}
+                </div>
               ))}
             </div>
           </div>

@@ -11,21 +11,11 @@ import type {
   TodayShipmentsSummary,
 } from "@/lib/types";
 
-interface TodayShipmentRow {
-  id: string;
-  vehicle_plate: string;
-  tonnage: number;
-  warehouses: { name: string } | null;
-  destinations: { name: string } | null;
-}
-
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
-
-  const today = new Date().toISOString().slice(0, 10);
 
   const [{ data: profile }, { data: totals }, { data: todaySummary }, { data: balances }] =
     await Promise.all([
@@ -74,19 +64,6 @@ export default async function DashboardPage() {
     stockByWarehouse.set(b.warehouse_id, existing);
   }
 
-  let todayShipmentsQuery = supabase
-    .from("shipments")
-    .select("id, vehicle_plate, tonnage, warehouses(name), destinations(name)")
-    .eq("shipment_date", today)
-    .order("created_at", { ascending: false });
-
-  if (isDepo && myWarehouseId) {
-    todayShipmentsQuery = todayShipmentsQuery.eq("warehouse_id", myWarehouseId);
-  }
-
-  const { data: todayShipments } = await todayShipmentsQuery;
-  const todayShipmentRows = (todayShipments ?? []) as unknown as TodayShipmentRow[];
-
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
@@ -134,24 +111,6 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Today's total shipment tonnage */}
-      <section className="rounded-lg border bg-brand-50 p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-gray-700">
-              Bugünkü Toplam Sevkiyat
-            </h2>
-            <div className="text-xs text-gray-400">
-              Tüm depolardan bugün çıkan toplam tonaj
-            </div>
-          </div>
-          <div className="text-3xl font-bold text-brand-700">
-            {formatTon(todayTotalTonnage)}{" "}
-            <span className="text-base font-normal text-gray-500">ton</span>
-          </div>
-        </div>
-      </section>
-
       {/* Çekilen vs kalan stock bar chart */}
       <section className="rounded-lg border bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-gray-700">
@@ -177,61 +136,38 @@ export default async function DashboardPage() {
         />
       </section>
 
-      {/* Today's shipments */}
+      {/* Today's shipments + total */}
       <section className="rounded-lg border bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-gray-700">
-          Bugünkü Taşınan Tonaj (Depo Bazlı)
-        </h2>
-        {filteredSummary.length === 0 ? (
-          <p className="text-sm text-gray-500">Bugün henüz sevkiyat yok.</p>
-        ) : (
-          <PieChart
-            segments={filteredSummary.map((s, i) => ({
-              label: s.warehouse_name,
-              value: Number(s.total_tonnage),
-              color: PIE_COLORS[i % PIE_COLORS.length],
-            }))}
-            formatValue={(v) => `${formatTon(v)} ton`}
-          />
-        )}
-      </section>
-
-      {/* Today's transfers (from -> to) */}
-      <section>
-        <h2 className="mb-3 text-sm font-semibold text-gray-700">
-          Bugünkü Taşımalar (Nereden - Nereye)
-        </h2>
-        <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
-          {todayShipmentRows.length === 0 ? (
-            <p className="p-4 text-sm text-gray-500">
-              Bugün henüz taşıma yok.
-            </p>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
-                <tr>
-                  <th className="px-4 py-2">Depo</th>
-                  <th className="px-4 py-2">Varış</th>
-                  <th className="px-4 py-2">Plaka</th>
-                  <th className="px-4 py-2 text-right">Tonaj</th>
-                </tr>
-              </thead>
-              <tbody>
-                {todayShipmentRows.map((s) => (
-                  <tr key={s.id} className="border-t">
-                    <td className="px-4 py-2">{s.warehouses?.name ?? "-"}</td>
-                    <td className="px-4 py-2">
-                      {s.destinations?.name ?? "-"}
-                    </td>
-                    <td className="px-4 py-2">{s.vehicle_plate}</td>
-                    <td className="px-4 py-2 text-right">
-                      {formatTon(s.tonnage)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+          <div className="flex-1">
+            <h2 className="mb-3 text-sm font-semibold text-gray-700">
+              Bugünkü Taşınan Tonaj (Depo Bazlı)
+            </h2>
+            {filteredSummary.length === 0 ? (
+              <p className="text-sm text-gray-500">Bugün henüz sevkiyat yok.</p>
+            ) : (
+              <PieChart
+                segments={filteredSummary.map((s, i) => ({
+                  label: s.warehouse_name,
+                  value: Number(s.total_tonnage),
+                  color: PIE_COLORS[i % PIE_COLORS.length],
+                }))}
+                formatValue={(v) => `${formatTon(v)} ton`}
+              />
+            )}
+          </div>
+          <div className="rounded-lg bg-brand-50 p-4 sm:w-64 sm:shrink-0">
+            <h2 className="text-sm font-semibold text-gray-700">
+              Bugünkü Toplam Sevkiyat
+            </h2>
+            <div className="mt-1 text-xs text-gray-400">
+              Tüm depolardan bugün çıkan toplam tonaj
+            </div>
+            <div className="mt-2 text-3xl font-bold text-brand-700">
+              {formatTon(todayTotalTonnage)}{" "}
+              <span className="text-base font-normal text-gray-500">ton</span>
+            </div>
+          </div>
         </div>
       </section>
     </div>

@@ -160,7 +160,8 @@ export default function ShipmentForm({
             </label>
             <FormattedNumberInput
               name="tonnage"
-              decimals={3}
+              decimals={4}
+              maxDigits={6}
               required
               value={tonnage}
               onValueChange={setTonnage}

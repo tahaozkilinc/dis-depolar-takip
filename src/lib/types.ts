@@ -25,11 +25,25 @@ export interface Destination {
   created_at: string;
 }
 
+export interface CarrierContact {
+  name: string;
+  phone: string;
+}
+
 export interface Carrier {
   id: string;
   name: string;
   active: boolean;
+  contacts: CarrierContact[];
+  contract_path: string | null;
   created_at: string;
+}
+
+export interface CarrierTotal {
+  carrier_id: string;
+  shipment_count: number;
+  total_tonnage: number;
+  total_paid: number;
 }
 
 export interface Profile {
