@@ -40,7 +40,7 @@ export default function StockEntryForm({
     products.find((p) => p.name.toLocaleUpperCase("tr-TR") === "MISIR")?.id ??
     "";
   const defaultOwnerId =
-    owners.find((o) => o.name === "BİZE AİT")?.id ?? "";
+    owners.find((o) => o.name === "SUNAR MISIR")?.id ?? "";
 
   function handleAddOwner() {
     setError(null);
