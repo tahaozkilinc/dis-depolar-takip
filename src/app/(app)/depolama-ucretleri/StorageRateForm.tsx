@@ -59,7 +59,7 @@ export default function StorageRateForm({
             </label>
             <FormattedNumberInput
               name="price_per_ton_per_day"
-              decimals={0}
+              decimals={2}
               required
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
