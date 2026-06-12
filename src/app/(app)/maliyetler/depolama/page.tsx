@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatTL, formatTon } from "@/lib/format";
 import type {
   DailyStorageCostToday,
+  DailyStorageCostTodayByOwner,
   StorageCostPeriodByOwnerRow,
   StorageCostPeriodRow,
   Warehouse,
@@ -26,10 +27,12 @@ export default async function DepolamaMaliyetPage({
   const params = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: warehouses }, { data: storageToday }] = await Promise.all([
-    supabase.from("warehouses").select("*").order("name"),
-    supabase.from("daily_storage_cost_today").select("*"),
-  ]);
+  const [{ data: warehouses }, { data: storageToday }, { data: storageTodayByOwner }] =
+    await Promise.all([
+      supabase.from("warehouses").select("*").order("name"),
+      supabase.from("daily_storage_cost_today").select("*"),
+      supabase.from("daily_storage_cost_today_by_owner").select("*"),
+    ]);
 
   const warehouseList = (warehouses ?? []) as Warehouse[];
 
@@ -51,6 +54,24 @@ export default async function DepolamaMaliyetPage({
     (sum, w) => sum + w.total_cost,
     0
   );
+
+  const storageOwnerByWarehouse = new Map<
+    string,
+    Map<string, { owner_name: string; total_cost: number }>
+  >();
+  for (const row of (storageTodayByOwner ?? []) as DailyStorageCostTodayByOwner[]) {
+    const ownerMap =
+      storageOwnerByWarehouse.get(row.warehouse_id) ??
+      new Map<string, { owner_name: string; total_cost: number }>();
+    const key = row.owner_id ?? "null";
+    const existing = ownerMap.get(key) ?? {
+      owner_name: row.owner_name,
+      total_cost: 0,
+    };
+    existing.total_cost += Number(row.storage_cost);
+    ownerMap.set(key, existing);
+    storageOwnerByWarehouse.set(row.warehouse_id, ownerMap);
+  }
 
   const warehouseId =
     (params.warehouse_id as string) || warehouseList[0]?.id || "";
@@ -112,25 +133,49 @@ export default async function DepolamaMaliyetPage({
           {storageByWarehouse.size === 0 && (
             <p className="text-sm text-gray-500">Veri bulunamadı.</p>
           )}
-          {Array.from(storageByWarehouse.entries()).map(([id, w]) => (
-            <div
-              key={id}
-              className="flex items-center gap-4 rounded-lg border bg-white p-4 shadow-sm"
-            >
-              <Image src="/silo.svg" alt="" width={48} height={48} />
-              <div>
-                <div className="text-sm font-medium text-gray-500">
-                  {w.warehouse_name}
+          {Array.from(storageByWarehouse.entries()).map(([id, w]) => {
+            const ownerBreakdown = Array.from(
+              storageOwnerByWarehouse.get(id)?.values() ?? []
+            );
+            return (
+              <div
+                key={id}
+                className="flex flex-col gap-3 rounded-lg border bg-white p-4 shadow-sm"
+              >
+                <div className="flex items-center gap-4">
+                  <Image src="/silo.svg" alt="" width={48} height={48} />
+                  <div>
+                    <div className="text-sm font-medium text-gray-500">
+                      {w.warehouse_name}
+                    </div>
+                    <div className="mt-1 text-xl font-semibold text-gray-900">
+                      {formatTL(w.total_cost)}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {formatTon(w.total_remaining)} ton
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-1 text-xl font-semibold text-gray-900">
-                  {formatTL(w.total_cost)}
-                </div>
-                <div className="text-xs text-gray-400">
-                  {formatTon(w.total_remaining)} ton
-                </div>
+                {ownerBreakdown.length > 0 && (
+                  <div className="border-t pt-2">
+                    <div className="mb-1 text-xs font-medium text-gray-500">
+                      Şirket Bazlı Kırılım
+                    </div>
+                    <ul className="flex flex-col gap-0.5 text-xs text-gray-600">
+                      {ownerBreakdown.map((o, i) => (
+                        <li key={i} className="flex justify-between gap-2">
+                          <span>{o.owner_name}</span>
+                          <span className="font-medium text-gray-800">
+                            {formatTL(o.total_cost)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div className="flex items-center gap-4 rounded-lg border bg-brand-50 p-4 shadow-sm">
             <div>
               <div className="text-sm font-medium text-gray-500">

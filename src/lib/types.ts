@@ -147,6 +147,18 @@ export interface DailyStorageCostToday {
   storage_cost: number;
 }
 
+export interface DailyStorageCostTodayByOwner {
+  warehouse_id: string;
+  warehouse_name: string;
+  product_id: string;
+  product_name: string;
+  owner_id: string | null;
+  owner_name: string;
+  remaining_tonnage: number;
+  rate_per_ton: number;
+  storage_cost: number;
+}
+
 export interface ShipmentCost {
   shipment_id: string;
   warehouse_id: string;
